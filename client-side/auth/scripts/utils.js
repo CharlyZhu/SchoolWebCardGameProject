@@ -13,7 +13,7 @@ function generateUUID()
 	return uuid;
 };
 
-// set cookies
+// Set cookies
 function setCookie(name, value, expireTime)
 {
 	let exp = new Date();
