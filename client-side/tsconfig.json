@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "esNext",
     "noImplicitAny": false,
-    "module": "amd",
+    "module": "commonjs",
+    "moduleResolution" : "Node",
     "removeComments": false,
-    "sourceMap": false,
-    "outDir": "scripts/js/compiled"
+    "sourceMap": false
   }
 }

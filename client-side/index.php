@@ -9,18 +9,15 @@
         <meta name="description" content="Online card game web project for school. Client side prototype">
         <meta name="keywords" content="card, phaser, web, game">
         <meta name="author" content="Rowan, Scott, Charly">
-        <title>Slain the Rowans</title>
+        <title>Based God Snowy</title>
         <link rel="shortcut icon" href="client-side/images/favicon.ico">
         <link rel="stylesheet" href="css/style.css">
     </head>
 
     <body>
-        <!-- jQuery -->
-        <script src="scripts/js/jquery-3.4.1.min.js"></script>
-        <!-- Phaser -->
-        <script src="scripts/js/phaser.min.js"></script>
+
         <!-- Game Files -->
-        <script src="scripts/js/raw/game.js"></script>
+        <script src="src/index.ts"></script>
 
         <?php
             // Defines where server-side base address is.
