@@ -18,7 +18,7 @@ const initGame = () => {
     // Webserver stuff:
     const server = new serverCom();
     server.init().then(() => {
-        server.sendToServer({ message: "Hi from Rowan " });
+        server.sendToServer({ type: "log", message: "Rowan sends his regards" });
     });
 };
 
