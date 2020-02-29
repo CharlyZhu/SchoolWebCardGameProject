@@ -3,7 +3,7 @@ export class serverCom {
 
     public async init(): Promise<void> {
         if (window.WebSocket) {
-            this.ws = new WebSocket("ws:www.empiraft.com:8001");
+            this.ws = new WebSocket("ws://54.37.66.227:8001");
 
             await new Promise<void>((resolve, reject) => {
                 // Listener for when connection is made and the server is open.
@@ -35,6 +35,7 @@ export class serverCom {
 
     // Function for sending an object info to server.
     public sendToServer(output: {}): void {
+        console.log("send2S");
         // Output prep section. Encoding can be added in the future.
         this.ws.send(JSON.stringify(output));
     }
