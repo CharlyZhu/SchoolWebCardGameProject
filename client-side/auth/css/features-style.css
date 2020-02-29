@@ -1,0 +1,33 @@
+/* Features */
+.features
+{
+	margin: 20px auto 10px auto;
+	text-align: center;
+}
+
+/* Features */
+.features .box
+{
+	vertical-align: top;
+	display: inline-block;
+	width: 30%;
+	padding: 10px;
+	text-align: center;
+	border: rgba(0, 0, 0, 0) solid 2px;
+
+	-webkit-transition-duration: 0.2s; /* Safari */
+	transition-duration: 0.2s;
+}
+
+/* Features */
+.features .box:hover
+{
+	background: #cccccc;
+	border: #aaaaaa solid 2px;
+}
+
+/* Features */
+.features .box img
+{
+	width: 90px;
+}

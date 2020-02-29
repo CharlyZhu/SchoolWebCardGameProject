@@ -1,0 +1,37 @@
+/* Login banner */
+.banner
+{
+	padding: 5px;
+	color: #eeeeee;
+	background-color: #376f3b;
+}
+
+/* Login banner */
+.banner h1
+{
+	float: left;
+}
+
+/* Login banner */
+.banner form
+{
+	float: right;
+	margin-top: 20px;
+}
+
+/* Login banner */
+.banner form img
+{
+	padding-top: 0px;
+	margin: auto;
+	height: 25px;
+	width: auto;
+}
+
+/* Login banner */
+.banner input
+{
+	padding: 4px;
+	height: 25px;
+	width: 150px;
+}

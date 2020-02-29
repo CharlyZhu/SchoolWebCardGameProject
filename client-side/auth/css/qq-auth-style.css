@@ -1,0 +1,14 @@
+/* QQ auth display */
+.qq-auth
+{
+
+}
+
+/* QQ互联窗口内框 */
+.qq-auth iframe
+{
+	margin: auto;
+	padding: auto;
+	width: 100%;
+	height: 400px;
+}

@@ -10,24 +10,23 @@
         <meta name="keywords" content="card, phaser, web, game">
         <meta name="author" content="Rowan, Scott, Charly">
         <title>Slain the Rowans</title>
-        <link rel="shortcut icon" href="./images/favicon.ico">
-        <link rel="stylesheet" href="./css/style.css">
+        <link rel="shortcut icon" href="client-side/images/favicon.ico">
+        <link rel="stylesheet" href="css/style.css">
     </head>
 
     <body>
         <!-- jQuery -->
-        <script src="./scripts/js/jquery-3.4.1.min.js"></script>
+        <script src="scripts/js/jquery-3.4.1.min.js"></script>
         <!-- Phaser -->
-        <script src="./scripts/js/phaser.min.js"></script>
+        <script src="scripts/js/phaser.min.js"></script>
         <!-- Game Files -->
-        <script src="./scripts/js/raw/game.js"></script>
+        <script src="scripts/js/raw/game.js"></script>
 
         <?php
-        // Defines where server base address is.
-        $server_address = "https://www.empiraft.com/";
-
-        // JavaScript setup.
-        echo("
+            // Defines where server-side base address is.
+            $server_address = "https://www.empiraft.com/";
+            // JavaScript setup.
+            echo("
                 <script> 
                     serverAddress = \"".$server_address."\";
                     setCookie(\"url\", window.location.href, 365 * 24 * 60 * 60 * 1000);
@@ -35,8 +34,7 @@
                     if (uuid) console.log(\"cookie: \" + uuid);
                     else uuid = generateUUID();
                 </script>
-                ");
+            ");
         ?>
     </body>
 </html>
-
