@@ -6,10 +6,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name=viewport content="width=device-width, initial-scale=1">
-    <meta name="description" content="帝国游戏官方网站，我们在创新的路上从未止步。">
-    <meta name="keywords" content="我的世界, Minecraft, 神话, 服务器">
-    <meta name="author" content="Mythraft">
-    <title>帝国游戏 - 官方网站</title>
+    <title>Card Game</title>
     <link rel="shortcut icon" href="./images/favicon.ico">
     <link rel="stylesheet" href="./css/normalise.css">
     <link rel="stylesheet" href="./css/global-style.css">
