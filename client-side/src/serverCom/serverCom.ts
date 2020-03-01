@@ -3,8 +3,8 @@ export class serverCom {
 
     public async init(): Promise<void> {
         if (window.WebSocket) {
-            //this.ws = new WebSocket("ws://54.37.66.227:8001");
-            this.ws = new WebSocket("ws://localhost:8001");
+            this.ws = new WebSocket("ws://54.37.66.227:8001"); //Change the comment for these if debugging locally
+            //this.ws = new WebSocket("ws://localhost:8001");
 
             await new Promise<void>((resolve, reject) => {
                 // Listener for when connection is made and the server is open.
