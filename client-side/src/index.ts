@@ -27,6 +27,7 @@ function preload() {}
 function create() {
 
     console.log("hello");
+    console.log("dskafbh");
 }
 
 function update() {}
