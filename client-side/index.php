@@ -106,6 +106,7 @@
                 // Function for sending an object info to server.
                 sendToServer(output){
                     // Output prep section. Encoding can be added in the future.
+                    console.log(JSON.stringify(output));
                     this.ws.send(JSON.stringify(output));
                 }
             }
