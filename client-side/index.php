@@ -148,8 +148,13 @@
 
             sendBtn.onclick = () => {
                 // Detect if input box is empty, then send info to server.
-                if (msgBox.value.trim() !== "")
-                    server.sendToServer({ type: "broadcast", message: msgBox.value.trim() });
+                let input = msgBox.value.trim();
+                if (input !== "") {
+                    if (!input.startsWith('/'))
+                        server.sendToServer({ type: "broadcast", message: input });
+                    else
+                        server.sendToServer({ type: "command", label: input.substr(1, input.indexOf(' ') - 1), args: input.substr(input.indexOf(' ') + 1) });
+                }
 
                 msgBox.value = "";
             };

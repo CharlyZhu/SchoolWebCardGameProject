@@ -28,7 +28,12 @@ let server = ws.createServer((conn) => {
 				// Broadcasts messages to clients.
 				broadcast({type: "broadcast", message: obj.message, from: conn.id});
 				break;
+			case "command":
+				console.log("[INFO] Command received: " + obj.label);
+				handleCommand(conn, obj);
+				break;
 			default:
+				console.log("[INFO] Unknown typed text received: " + msg);
 				break;
 		}
 	});
@@ -51,13 +56,41 @@ let server = ws.createServer((conn) => {
 server.listen(8001);
 console.log("[INFO] Successfully created web socket, listening at 8001.");
 
-function send(conn, msg) {
+function send(conn, jsonObj) {
 	if (conn.readyState == 1)
-		conn.send(JSON.stringify(msg));
+		conn.send(JSON.stringify(jsonObj));
 }
 
-function broadcast(msg) {
+function broadcast(jsonObj) {
 	connections.forEach((conn) => {
-		send(conn, msg);
+		send(conn, jsonObj);
 	});
+}
+
+function handleCommand(conn, cmdJsonObj) {
+	switch(cmdJsonObj.label) {
+		case "connections":
+			let cmdArgs = cmdJsonObj.args.split(' ');
+			if (cmdArgs.length == 0) {
+				send(conn, {type: "info", message: "Command error, not supported argument."});
+				break;
+			}
+			switch (cmdArgs[0]) {
+				case "count":
+					send(conn, {type: "info", message: "There are currently " + connections.length + " connection(s) online."});
+					break;
+				case "list":
+					let output = "Connections: ";
+					connections.forEach((conn) => {output += conn.id + " "})
+					send(conn, {type: "info", message: output.trim()});
+					break;
+			}
+			break;
+		case "ping":
+			send(conn, {type: "info", message: "pong"});
+			break;
+		default:
+			send(conn, {type: "info", message: "Command error, no such command."});
+			break;
+	}
 }
