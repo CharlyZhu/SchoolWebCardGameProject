@@ -1,4 +1,4 @@
-export class card {
+export class Card {
   public name: string;
   public uid: number;
   public manaCost: number;
@@ -18,4 +18,18 @@ export class card {
 
     this.imageURL = cardJSON.imageURL;
   }
+
+
+  public toString(): string {
+    
+    return ("Name: " + this.name +
+    "\nUID: " + this.uid.toString() +
+    "\nMana Cost: " + this.manaCost.toString() +
+    "\nEffects: " + JSON.stringify(this.effects) +
+    "\nImage Url: " + this.imageURL
+    )
+
+  }
+
+
 }
