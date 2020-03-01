@@ -1,21 +1,20 @@
-// Define default game options.
-
-// What default food should be like.
-
-// Total food.
-
-// This function generates data for a food.
-
 // Require needed files, important websocket stuff, initializaton of websocket.
 let ws = require("nodejs-websocket");
 console.log("[INFO] Initializing web socket...");
-// Creates the server.
-let server = ws.createServer();
-// Adds a listener on making connection.
-server.addListener("connection", function(connection)
-{
+
+let connections = Array();
+let connId = 0;
+
+// Creating server and applying default callback functions.
+let server = ws.createServer((conn) => {
+	// Assign an unique ID for the new connection then store it within the connection.
+	connections.push(conn);
+	conn.id = connId++;
+	console.log("[INFO] New connection established with ID number " + conn.id);
+	send(conn, {info: "Assigned ID " + conn.id});
+
 	// Calls on msg receive.
-	connection.addListener('text', function(msg) {
+	conn.addListener('text', function(msg) {
 		// Input prep section. Decoding can be added in the future.
 		// Translate message to object.
 		let obj = JSON.parse(msg);
@@ -25,7 +24,8 @@ server.addListener("connection", function(connection)
 				break;
 			case "broadcast":
 				console.log("[INFO] Broadcasting: " + obj.message);
-				// TODO: Add a function that broadcasts messages to clients.
+				// Broadcasts messages to clients.
+				broadcast({broadcast: obj.message});
 				break;
 			default:
 				break;
@@ -33,17 +33,30 @@ server.addListener("connection", function(connection)
 	});
 
 	// Calls on connection close.
-	connection.addListener('close', function() {
-
+	conn.addListener('close', function() {
+		console.log("[INFO] Connection " + conn.id + " closed.");
+		connections.splice(conn.id, 1);
 	});
 
 	// Calls on error occur.
-	connection.addListener('error', function() {
-
+	conn.addListener('error', (e) => {
+		console.log("[ERROR] Connection " + conn.id + " produced error:");
+		console.log(e);
+		connections.splice(conn.id, 1);
 	});
 });
 
 // Asks the server to listen to port 8001.
 server.listen(8001);
-console.log("[INFO] Successfully created web socket.");
-function get_distance(loc1, loc2) { return Math.sqrt(Math.pow(Math.abs(loc1.x - loc2.x), 2) + Math.pow(Math.abs(loc1.y - loc2.y), 2)); }
+console.log("[INFO] Successfully created web socket, listening at 8001.");
+
+function send(conn, msg) {
+	if (conn.readyState == 1)
+		conn.send(JSON.stringify(msg));
+}
+
+function broadcast(msg) {
+	connections.forEach((conn) => {
+		send(conn, msg);
+	});
+}

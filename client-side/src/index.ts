@@ -1,4 +1,5 @@
 import "phaser";
+import "./chatDebug";
 import { serverCom } from "./serverCom/serverCom";
 
 const initGame = () => {
@@ -14,12 +15,6 @@ const initGame = () => {
     };
 
     var game = new Phaser.Game(config);
-
-    // Webserver stuff:
-    const server = new serverCom();
-    server.init().then(() => {
-        server.sendToServer({ message: "Hi from Rowan " });
-    });
 };
 
 function preload() {}
@@ -29,3 +24,8 @@ function create() {}
 function update() {}
 
 initGame();
+
+const server = new serverCom();
+server.init().then(() => {
+
+});
