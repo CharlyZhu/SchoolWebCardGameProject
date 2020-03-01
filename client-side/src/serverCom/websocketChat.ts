@@ -15,10 +15,17 @@ server.init().then(r => {
         // Process data.
         let json = JSON.parse(data.data);
         let newLine: string = "";
-        if (json.type === "info")
-            newLine = "[INFO] " + json.message;
-        else if (json.type === "broadcast")
-            newLine = "[MSG] [ID-" + json.from + "] " + json.message;
+        switch(json.type) {
+            case "heartBeat":
+                server.sendToServer({type: "heartBeat"});
+                break;
+            case "info":
+                newLine = "[INFO] " + json.message;
+                break;
+            case "broadcast":
+                newLine = "[MSG] [ID-" + json.from + "] " + json.message;
+                break;
+        }
         // When server feeds back data, this logs data inside HTML.
         receiveBox.innerHTML += `<p>${newLine}</p>`;
         receiveBox.scrollTo({
