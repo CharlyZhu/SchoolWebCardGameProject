@@ -61,7 +61,7 @@
         <!-- Demo code for client server communication -->
         <div class="websocket">
             <div class="receive">
-                <h2>Websocket Demo</h2>
+                <h2>Websocket Console</h2>
                 <div id="receive-box"></div>
             </div>
             <div class="send">
@@ -76,19 +76,17 @@
             class serverCom {
                 init(){
                     if (window.WebSocket) {
-                        //this.ws = new WebSocket("ws://54.37.66.227:8001");
-                        this.ws = new WebSocket("ws://localhost:8001");
+                        this.ws = new WebSocket("ws://54.37.66.227:8001");
+                        //this.ws = new WebSocket("ws://localhost:8001");
 
                         // Listener for when connection is made and the server is open.
                         this.ws.onopen = e => {
                             console.log("Connected to server at " + this.ws.url + ".");
-                            resolve();
                         };
 
                         // Listener for when error occurs.
                         this.ws.onerror = () => {
                             console.log("Connection failed when connecting to " + this.ws.url + ".");
-                            reject();
                         };
 
                         // Listener for when server sends back a message.
@@ -137,9 +135,23 @@
                 });
             };
 
+            // Send message on enter pressed.
+            document.onkeydown = function (event) {
+                let e = event || window.event;
+                // Calls on enter pressed, enter has a key code of 13.
+                if (e && e.keyCode == 13) {
+                    sendBtn.click();
+                    // Cancels key press event so that enter does not get logged.
+                    return false;
+                }
+            };
+
             sendBtn.onclick = () => {
-                // Sends info to server.
-                server.sendToServer({ type: "broadcast", message: msgBox.value });
+                // Detect if input box is empty, then send info to server.
+                if (msgBox.value.trim() !== "")
+                    server.sendToServer({ type: "broadcast", message: msgBox.value.trim() });
+
+                msgBox.value = "";
             };
 
             exit.onclick = () => {
