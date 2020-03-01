@@ -1,21 +1,21 @@
-// Define default game options.
-
-// What default food should be like.
-
-// Total food.
-
-// This function generates data for a food.
-
 // Require needed files, important websocket stuff, initializaton of websocket.
 let ws = require("nodejs-websocket");
 console.log("[INFO] Initializing web socket...");
-// Creates the server.
-let server = ws.createServer();
-// Adds a listener on making connection.
-server.addListener("connection", function(connection)
-{
+
+let connections = Array();
+let connId = 0;
+
+// Creating server and applying default callback functions.
+let server = ws.createServer((conn) => {
+	// Assign an unique ID for the new connection then store it within the connection.
+	connections.push(conn);
+	conn.id = connId++;
+	console.log("[INFO] New connection established with ID number " + conn.id);
+	send(conn, {type: "info", message: "Your assigned ID is " + conn.id});
+	broadcast({type: "broadcast", message: "New connection joined with ID " + conn.id, from: conn.id});
+
 	// Calls on msg receive.
-	connection.addListener('text', function(msg) {
+	conn.addListener('text', function(msg) {
 		// Input prep section. Decoding can be added in the future.
 		// Translate message to object.
 		let obj = JSON.parse(msg);
@@ -25,25 +25,72 @@ server.addListener("connection", function(connection)
 				break;
 			case "broadcast":
 				console.log("[INFO] Broadcasting: " + obj.message);
-				// TODO: Add a function that broadcasts messages to clients.
+				// Broadcasts messages to clients.
+				broadcast({type: "broadcast", message: obj.message, from: conn.id});
+				break;
+			case "command":
+				console.log("[INFO] Command received: " + obj.label);
+				handleCommand(conn, obj);
 				break;
 			default:
+				console.log("[INFO] Unknown typed text received: " + msg);
 				break;
 		}
 	});
 
 	// Calls on connection close.
-	connection.addListener('close', function() {
-
+	conn.addListener('close', function() {
+		console.log("[INFO] Connection " + conn.id + " closed.");
+		connections.splice(conn.id, 1);
 	});
 
 	// Calls on error occur.
-	connection.addListener('error', function() {
-
+	conn.addListener('error', (e) => {
+		console.log("[ERROR] Connection " + conn.id + " produced error:");
+		console.log(e);
+		connections.splice(conn.id, 1);
 	});
 });
 
 // Asks the server to listen to port 8001.
 server.listen(8001);
-console.log("[INFO] Successfully created web socket.");
-function get_distance(loc1, loc2) { return Math.sqrt(Math.pow(Math.abs(loc1.x - loc2.x), 2) + Math.pow(Math.abs(loc1.y - loc2.y), 2)); }
+console.log("[INFO] Successfully created web socket, listening at 8001.");
+
+function send(conn, jsonObj) {
+	if (conn.readyState == 1)
+		conn.send(JSON.stringify(jsonObj));
+}
+
+function broadcast(jsonObj) {
+	connections.forEach((conn) => {
+		send(conn, jsonObj);
+	});
+}
+
+function handleCommand(conn, cmdJsonObj) {
+	switch(cmdJsonObj.label) {
+		case "connections":
+			let cmdArgs = cmdJsonObj.args.split(' ');
+			if (cmdArgs.length == 0) {
+				send(conn, {type: "info", message: "Command error, not supported argument."});
+				break;
+			}
+			switch (cmdArgs[0]) {
+				case "count":
+					send(conn, {type: "info", message: "There are currently " + connections.length + " connection(s) online."});
+					break;
+				case "list":
+					let output = "Connections: ";
+					connections.forEach((conn) => {output += conn.id + " "})
+					send(conn, {type: "info", message: output.trim()});
+					break;
+			}
+			break;
+		case "ping":
+			send(conn, {type: "info", message: "pong"});
+			break;
+		default:
+			send(conn, {type: "info", message: "Command error, no such command."});
+			break;
+	}
+}
