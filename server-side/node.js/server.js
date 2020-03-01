@@ -11,7 +11,8 @@ let server = ws.createServer((conn) => {
 	connections.push(conn);
 	conn.id = connId++;
 	console.log("[INFO] New connection established with ID number " + conn.id);
-	send(conn, {info: "Assigned ID " + conn.id});
+	send(conn, {type: "info", message: "Your assigned ID is " + conn.id});
+	broadcast({type: "broadcast", message: "New connection joined with ID " + conn.id, from: conn.id});
 
 	// Calls on msg receive.
 	conn.addListener('text', function(msg) {
@@ -25,7 +26,7 @@ let server = ws.createServer((conn) => {
 			case "broadcast":
 				console.log("[INFO] Broadcasting: " + obj.message);
 				// Broadcasts messages to clients.
-				broadcast({broadcast: obj.message});
+				broadcast({type: "broadcast", message: obj.message, from: conn.id});
 				break;
 			default:
 				break;

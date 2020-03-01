@@ -77,13 +77,17 @@
 
             server.init();
 
-            // server.sendToServer({ type: "log", message: "Client feedback." });
-            // server.sendToServer({ type: "broadcast", message: "THIS IS A BROADCAST MESSAGE" });
-
             const ws = server.ws;
             ws.onmessage = data => {
+                // Process data.
+                let json = JSON.parse(data.data);
+                let newLine = "";
+                if (json.type === "info")
+                    newLine = "[INFO] " + json.message;
+                else if (json.type === "broadcast")
+                    newLine = "[MSG] [ID-" + json.from + "] " + json.message;
                 // When server feeds back data, this logs data inside HTML.
-                receiveBox.innerHTML += `<p>${data.data}</p>`;
+                receiveBox.innerHTML += `<p>${newLine}</p>`;
                 receiveBox.scrollTo({
                     top: receiveBox.scrollHeight,
                     behavior: "smooth"
@@ -91,12 +95,12 @@
             };
 
             sendBtn.onclick = () => {
-                // 点击发送按钮。将数据发送给服务端
+                // Sends info to server.
                 server.sendToServer({ type: "broadcast", message: msgBox.value });
             };
 
             exit.onclick = () => {
-                // 客户端主动关闭连接
+                // Request to close socket.
                 ws.close();
             };
         </script>
