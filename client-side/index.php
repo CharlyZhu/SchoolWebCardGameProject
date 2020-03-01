@@ -1,7 +1,7 @@
 <?php session_start(); ?>
 
 <!DOCTYPE html>
-<html lang="zh_CN">
+<html lang="en_GB">
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -15,6 +15,7 @@
         <style type="text/css">
             body {
                 background: url("https://www.empiraft.com/rowan/img/about_img.jpg");
+                font-family: Helvetica, Arial;
             }
             .websocket {
                 width: 800px;

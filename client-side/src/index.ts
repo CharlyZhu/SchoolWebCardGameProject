@@ -24,7 +24,10 @@ const initGame = () => {
 
 function preload() {}
 
-function create() {}
+function create() {
+
+    console.log("hello");
+}
 
 function update() {}
 
@@ -32,5 +35,5 @@ initGame();
 
 const server = new serverCom();
 server.init().then(() => {
-
+    
 });
