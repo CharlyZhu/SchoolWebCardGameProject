@@ -3,7 +3,7 @@ export class serverCom {
 
     public async init(): Promise<void> {
         if (window.WebSocket) {
-            this.ws = new WebSocket("ws://54.37.66.227:8001"); //Change the comment for these if debugging locally
+            this.ws = new WebSocket("ws://54.37.66.227:8001");
             //this.ws = new WebSocket("ws://localhost:8001");
 
             await new Promise<void>((resolve, reject) => {
@@ -36,6 +36,7 @@ export class serverCom {
     // Function for sending an object info to server.
     public sendToServer(output: {}): void {
         // Output prep section. Encoding can be added in the future.
+        console.log(JSON.stringify(output));
         this.ws.send(JSON.stringify(output));
     }
 }
