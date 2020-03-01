@@ -12,13 +12,56 @@
         <title>Based God Snowy</title>
         <link rel="shortcut icon" href="client-side/images/favicon.ico">
         <link rel="stylesheet" href="css/style.css">
+        <style type="text/css">
+            body {
+                background: url("https://www.empiraft.com/rowan/img/about_img.jpg");
+            }
+            .websocket {
+                width: 800px;
+                height: 600px;
+                border: 1px solid #ccc;
+                margin: 100px auto 0 auto;
+                text-align: center;
+                background: rgba(208, 239, 200, .8);
+            }
+            #receive-box {
+                width: 600px;
+                height: 280px;
+                overflow: auto;
+                text-align: left;
+                margin: 0 auto 24px auto;
+            }
+            #msg-need-send {
+                width: 600px;
+                height: 100px;
+                resize: none;
+                border-radius: 10px;
+            }
+            #send-btn {
+                border: none;
+                width: 600px;
+                border-radius: 5px;
+                background: #199632;
+                padding: 5px 10px;
+                color: #fff;
+                cursor: pointer;
+            }
+            #exit {
+                border: 1px solid #ccc;
+                width: 600px;
+                border-radius: 5px;
+                background: #bebbbf;
+                padding: 5px 10px;
+                cursor: pointer;
+            }
+        </style>
     </head>
 
     <body>
         <!-- Demo code for client server communication -->
         <div class="websocket">
             <div class="receive">
-                <p>Feedback from server</p>
+                <h2>Websocket Demo</h2>
                 <div id="receive-box"></div>
             </div>
             <div class="send">

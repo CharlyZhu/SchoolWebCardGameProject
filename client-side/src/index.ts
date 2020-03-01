@@ -1,5 +1,4 @@
 import "phaser";
-import "./chatDebug";
 import { serverCom } from "./serverCom/serverCom";
 
 const initGame = () => {
