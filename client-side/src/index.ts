@@ -14,15 +14,12 @@ const initGame = () => {
     };
 
     var game = new Phaser.Game(config);
-<<<<<<< HEAD
 
     // Webserver stuff:
     const server = new serverCom();
     server.init().then(() => {
         server.sendToServer({ type: "log", message: "Rowan sends his regards" });
     });
-=======
->>>>>>> origin/master
 };
 
 function preload() {}
