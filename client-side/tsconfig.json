@@ -5,6 +5,8 @@
     "module": "commonjs",
     "moduleResolution" : "Node",
     "removeComments": false,
-    "sourceMap": false
-  }
+    "sourceMap": false  
+  },
+  "include": ["src"],
+  "exclude": ["dist"]
 }
