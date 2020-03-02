@@ -34,7 +34,7 @@ server.init().then(() => {
             case "heartBeat":
                 // Sending the server timestamp back to server to complete ping test server side.
                 server.sendToServer({type: "heartBeat", timestamp: json.timestamp});
-                break;
+                return;
             case "ping":
                 newLine = "[PING] Pong: " + json.value + "ms";
                 break;
@@ -43,6 +43,9 @@ server.init().then(() => {
                 break;
             case "broadcast":
                 newLine = "[MSG] [" + json.from + "] " + json.message;
+                break;
+            case "img":
+                newLine = "[IMG] [" + json.from + "] <img src='" + json.message + "' alt='IMG' />";
                 break;
         }
 
@@ -54,7 +57,7 @@ server.init().then(() => {
         });
     };
 
-    // Send message on enter pressed.
+    // Key press listener.
     document.onkeydown = function (event: KeyboardEvent) {
         // Calls on enter pressed, sends the message in the chat box.
         if (event && event.key === "Enter") {
@@ -62,11 +65,12 @@ server.init().then(() => {
             // Cancels key press event so that enter does not get logged.
             return false;
         }
+
+        // Calls on up and down arrows are pressed, moves command index pointer therefore changing value within msg box.
         if (event && event.key === "ArrowUp") {
             if (cmdIdxPtr > 0) {
                 cmdIdxPtr--;
                 (<HTMLInputElement> msgBox).value = cmdHis[cmdIdxPtr];
-                console.log(cmdIdxPtr, cmdHis.length);
             }
             return false;
         }
@@ -76,6 +80,7 @@ server.init().then(() => {
                 (<HTMLInputElement> msgBox).value = cmdHis[cmdIdxPtr];
                 return false;
             }
+            // If pointer points to the last history, make pointer the length of the history (index + 1) and set value to empty.
             cmdIdxPtr = cmdHis.length;
             (<HTMLInputElement> msgBox).value = "";
             return false;
