@@ -213,6 +213,13 @@ function handleCommand(conn, cmdJsonObj) {
 			}
 			broadcast({type: "img", message: cmdArgs[0],  from: conn.nickname});
 			break;
+		case "link":
+			if (argsCount === 0) {
+				send(conn, {type: "info", message: "  - link [url] :: Sends URL to others."});
+				break;
+			}
+			broadcast({type: "link", message: cmdArgs[0],  from: conn.nickname});
+			break;
 		default:
 			send(conn, {type: "info", message: "Command error, no such command."});
 			break;

@@ -47,6 +47,9 @@ server.init().then(() => {
             case "img":
                 newLine = "[IMG] [" + json.from + "] <img src='" + json.message + "' alt='IMG' />";
                 break;
+            case "link":
+                newLine = "[LINK] [" + json.from + "] <a href='" + json.message + "' target='_blank'> "+ json.message +" </a>";
+                break;
         }
 
         // When server feeds back data, this logs data inside HTML.
