@@ -32,6 +32,17 @@
             #receive-box img {
                 max-width: 100px;
             }
+            img.emoji {
+                width: 25px;
+                height: 25px;
+            }
+            #emoji-box {
+                width: 600px;
+                height: 30px;
+                overflow: auto;
+                text-align: left;
+                margin: 0 auto;
+            }
             #msg-need-send {
                 width: 600px;
                 height: 100px;
@@ -43,7 +54,7 @@
                 width: 600px;
                 border-radius: 5px;
                 background: #199632;
-                padding: 5px 10px;
+                padding: 2px 5px;
                 color: #fff;
                 cursor: pointer;
             }
@@ -52,7 +63,7 @@
                 width: 600px;
                 border-radius: 5px;
                 background: #bebbbf;
-                padding: 5px 10px;
+                padding: 2px 5px;
                 cursor: pointer;
             }
         </style>
@@ -65,6 +76,7 @@
                 <div id="receive-box"></div>
             </div>
             <div class="send">
+                <div id="emoji-box"> </div>
                 <textarea type="text" id="msg-need-send"></textarea>
                 <p> <button id="send-btn">Send</button> </p>
             </div>

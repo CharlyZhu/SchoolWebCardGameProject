@@ -6,6 +6,36 @@ const sendBtn: HTMLElement = document.getElementById("send-btn");
 const exit: HTMLElement = document.getElementById("exit");
 const receiveBox: HTMLElement = document.getElementById("receive-box");
 
+async function readString(url: string): Promise<string> {
+    let request: XMLHttpRequest = new XMLHttpRequest();
+    // Sets obtain method and url.
+    request.open("get", url);
+    // Sets send body (data) to nothing.
+    request.send(null);
+    return await new Promise<string>((resolve, reject)=>{
+        // Sets callback on XHR object message return.
+        request.onload = function () {
+            // If status returned is 200, data is successfully obtained.
+            if (request.status == 200) {
+                let jsonStr = request.responseText;
+                if (jsonStr !== "")
+                    resolve(jsonStr);
+            }
+            reject("");
+        };
+    });
+}
+
+async function readJSON(url: string): Promise<{}> {
+    return await new Promise<{}>((resolve, reject)=>{
+        readString(url).then((jsonStr)=>{
+            resolve(JSON.parse(jsonStr));
+        }).catch(()=>{
+            reject({});
+        });
+    });
+}
+
 // Array to store prev commands.
 let cmdHis: Array<string> = Array();
 let cmdIdxPtr: number = 0;
@@ -16,6 +46,28 @@ if (cmdHisCookie) {
     cmdHis = JSON.parse(cmdHisCookie).history;
     cmdIdxPtr = cmdHis.length;
 }
+
+let emojiList = [];
+// Obtain emoji list from server.
+readJSON("//www.empiraft.com/resources/card_game/json/?file=emojis").then((result)=>{
+    emojiList = result.emojis;
+
+    // Create emojis from the list.
+    let emojiBox: HTMLElement = document.getElementById("emoji-box");
+    emojiBox.innerHTML = "";
+    for (let i: number = 0; i < emojiList.length; i++) {
+        emojiBox.innerHTML += "<img class='emoji' src='" + emojiList[i] + "'/>";
+    }
+
+    let emojiItems: HTMLCollection = emojiBox.children;
+
+    // Let emoji buttons work.
+    for (let i:number = 0; i < emojiItems.length; i++) {
+        (<HTMLElement>emojiItems.item(i)).onclick = () => {
+            server.sendToServer({type: "emoji", value: i});
+        }
+    }
+});
 
 // Web server stuff:
 const server = new serverCom();
@@ -46,6 +98,9 @@ server.init().then(() => {
                 break;
             case "img":
                 newLine = "[IMG] [" + json.from + "] <img src='" + json.message + "' alt='IMG' />";
+                break;
+            case "emoji":
+                newLine = "[IMG] [" + json.from + "] <img class='emoji' src='" + emojiList[json.value] + "' alt='IMG' />";
                 break;
             case "link":
                 newLine = "[LINK] [" + json.from + "] <a href='" + json.message + "' target='_blank'> "+ json.message +" </a>";

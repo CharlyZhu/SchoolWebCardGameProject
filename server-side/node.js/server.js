@@ -1,3 +1,5 @@
+//let serverCb = require("./serverCb");
+
 // TODO: This should be lifted to somewhere else.
 let config = {
 	server: {
@@ -7,9 +9,13 @@ let config = {
 	timeout: {
 		checkFrequency: 5000,
 		heartbeat: 3000,
-		inactivity: 60 * 20 * 1000
+		inactivity: 20 * 60 * 1000
 	}
 };
+
+let emojis = new Array();
+emojis.push("https://cdn.discordapp.com/attachments/683354798728413198/684034961715625984/Me.png");
+emojis.push("https://cdn.discordapp.com/attachments/683354798728413198/684034961715625984/Me.png");
 
 // Require needed files, important websocket stuff, initialization of websocket.
 let ws = require("nodejs-websocket");
@@ -34,6 +40,7 @@ let server = ws.createServer((conn) => {
 	conn.nickname = "ID-" + conn.id;
 	conn.lastAliveTimeStamp = getCurrentTime();
 	conn.lastHeartBeatTimeStamp = getCurrentTime();
+	conn.iAmHacker = false;
 	console.log("[INFO] New connection established with ID number [" + conn.id + "].");
 	send(conn, {type: "info", message: "Your assigned ID is [" + conn.id + "], there are currently " + connections.length + " online connection(s)."});
 	broadcast({type: "broadcast", message: "New connection joined with ID number [" + conn.id + "].", from: conn.nickname});
@@ -57,6 +64,11 @@ let server = ws.createServer((conn) => {
 				break;
 			case "broadcast":
 				console.log("[INFO] Broadcasting: " + obj.message);
+				// Fun hacker stuff.
+				if (obj.message === "I AM HACKER") {
+					conn.iAmHacker = true;
+					obj.message = "A HACKER HAS LOGGED IN!!!"
+				}
 				conn.lastAliveTimeStamp = getCurrentTime();
 				// Broadcasts messages to clients.
 				broadcast({type: "broadcast", message: obj.message,  from: conn.nickname});
@@ -65,6 +77,11 @@ let server = ws.createServer((conn) => {
 				console.log("[INFO] Command received: " + obj.label);
 				conn.lastAliveTimeStamp = getCurrentTime();
 				handleCommand(conn, obj);
+				break;
+			case "emoji":
+				console.log("[INFO] Emoji received: " + obj.value);
+				conn.lastAliveTimeStamp = getCurrentTime();
+				broadcast({type: "emoji", value: obj.value,  from: conn.nickname});
 				break;
 			default:
 				console.log("[INFO] Unknown typed text received: " + msg);
@@ -121,8 +138,12 @@ function getCurrentTime() {
 // Sends a json obj to a connection.
 function send(conn, jsonObj) {
 	// Checks if connections is open, send if it is.
-	if (conn.readyState === 1)
+	if (conn.readyState !== 1)
+		return;
+	if (conn.iAmHacker === true)
 		conn.send(JSON.stringify(jsonObj));
+	else
+		conn.send(JSON.stringify(jsonObj).replace(/</g, "&lt;").replace(/>/g, "&gt;"));
 }
 
 // Sends a json obj to all open connections.
