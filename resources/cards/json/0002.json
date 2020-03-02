@@ -1,0 +1,7 @@
+{
+  "name": "First Aid",
+  "uid": "0002",
+  "manaCost": 3,
+  "effects": { "heal": 4 },
+  "imageURL": "https://www.empiraft.com/rowan/img/about_img.jpg"
+}

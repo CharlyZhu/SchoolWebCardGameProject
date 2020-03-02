@@ -1,20 +1,21 @@
 import "phaser";
 import { serverCom } from "./serverCom/serverCom";
+import { Loader } from "./scenes/loader";
 
 const initGame = () => {
-    var config = {
+    const config = {
         type: Phaser.AUTO,
         width: 800,
         height: 600,
-        scene: {
-            preload: preload,
-            create: create,
-            update: update
-        }
+
     };
 
-    var game = new Phaser.Game(config);
+    const game = new Phaser.Game(config);
 
+    const loader =  new Loader();
+
+    game.scene.add("loader", loader, true);
+    
     // Webserver stuff:
     const server = new serverCom();
     server.init().then(() => {
@@ -22,19 +23,8 @@ const initGame = () => {
     });
 };
 
-function preload() {}
 
-function create() {
-
-    console.log("hello");
-    console.log("dskafbh");
-}
-
-function update() {}
 
 initGame();
 
-const server = new serverCom();
-server.init().then(() => {
-    
-});
+

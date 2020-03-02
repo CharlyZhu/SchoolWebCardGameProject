@@ -1,0 +1,7 @@
+{
+  "name": "Strike",
+  "uid": "0001",
+  "manaCost": 2,
+  "effects": { "weaponDamage": true },
+  "imageURL": "https://www.empiraft.com/rowan/img/about_img.jpg"
+}
