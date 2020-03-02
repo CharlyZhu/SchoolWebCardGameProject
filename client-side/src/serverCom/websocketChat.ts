@@ -14,7 +14,7 @@ let cmdIdxPtr: number = 0;
 let cmdHisCookie = getCookie("command_history");
 if (cmdHisCookie) {
     cmdHis = JSON.parse(cmdHisCookie).history;
-    cmdIdxPtr = cmdHis.length - 1;
+    cmdIdxPtr = cmdHis.length;
 }
 
 // Web server stuff:
@@ -63,9 +63,10 @@ server.init().then(() => {
             return false;
         }
         if (event && event.key === "ArrowUp") {
-            (<HTMLInputElement> msgBox).value = cmdHis[cmdIdxPtr];
             if (cmdIdxPtr > 0) {
                 cmdIdxPtr--;
+                (<HTMLInputElement> msgBox).value = cmdHis[cmdIdxPtr];
+                console.log(cmdIdxPtr, cmdHis.length);
             }
             return false;
         }
@@ -73,8 +74,10 @@ server.init().then(() => {
             if (cmdIdxPtr < cmdHis.length - 1) {
                 cmdIdxPtr++;
                 (<HTMLInputElement> msgBox).value = cmdHis[cmdIdxPtr];
+                console.log(cmdIdxPtr, cmdHis.length);
                 return false;
             }
+            cmdIdxPtr = cmdHis.length;
             (<HTMLInputElement> msgBox).value = "";
             return false;
         }
@@ -84,9 +87,13 @@ server.init().then(() => {
         // Detect if input box is empty, then send info to server.
         let input: string = (<HTMLInputElement> msgBox).value.trim();
         if (input !== "") {
-            cmdHis.push(input);
-            cmdIdxPtr = cmdHis.length - 1;
-            setCookie("command_history", JSON.stringify({history: cmdHis, ptr: cmdIdxPtr}), 1000 * 60 * 60 * 24);
+            // If new input is not identical to the last input recorded, input to input history for future use.
+            if (input !== cmdHis[cmdHis.length - 1]) {
+                cmdHis.push(input);
+                setCookie("command_history", JSON.stringify({history: cmdHis, ptr: cmdIdxPtr}), 1000 * 60 * 60 * 24);
+            }
+            cmdIdxPtr = cmdHis.length;
+            // Decide upon whether to treat input as command or message.
             if (!input.startsWith('/'))
                 server.sendChat(input);
             else

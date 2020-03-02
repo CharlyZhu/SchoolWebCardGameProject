@@ -1,24 +1,27 @@
+// TODO: This should be lifted to somewhere else.
+let config = {
+	server: {
+		ip: "",
+		port: 8001
+	},
+	timeout: {
+		checkFrequency: 5000,
+		heartbeat: 3000,
+		inactivity: 60 * 20 * 1000
+	}
+};
+
 // Require needed files, important websocket stuff, initialization of websocket.
 let ws = require("nodejs-websocket");
-
 console.log("[INFO] Initializing web socket...");
 
 let connections = Array();
 let connId = 0;
 
 const heartbeatCb = (conn) => {
-	let timeout = 3000;
-	// Creates an interval object that runs handler function once 1000 ms.
-	let interval = setInterval(()=>{
+	return setInterval(() => {
 		// Sends heart beat packet to client and checks if the client's last response time had been over time out time.
-		send(conn, { type: "heartBeat", timestamp: new Date().getUTCMilliseconds()});
-		if (new Date().getUTCMilliseconds() - conn.lastAliveTimeStamp > timeout) {
-			if (conn.readyState == 1)
-				conn.close("time out");
-			console.log("[INFO] Connection [" + conn.id + "] terminated due to heartbeat timeout.");
-			clearInterval(interval);
-			return;
-		}
+		send(conn, { type: "heartBeat", timestamp: getCurrentTime()});
 	}, 1000);
 };
 
@@ -29,13 +32,14 @@ let server = ws.createServer((conn) => {
 	conn.id = connId++;
 	conn.status = "CONNECTED";
 	conn.nickname = "ID-" + conn.id;
-	conn.lastAliveTimeStamp = new Date().getUTCMilliseconds();
+	conn.lastAliveTimeStamp = getCurrentTime();
+	conn.lastHeartBeatTimeStamp = getCurrentTime();
 	console.log("[INFO] New connection established with ID number " + conn.id);
 	send(conn, {type: "info", message: "Your assigned ID is " + conn.id});
 	broadcast({type: "broadcast", message: "New connection joined with ID " + conn.id, from: conn.nickname});
 
 	// Start heart beat checking.
-	heartbeatCb(conn);
+	conn.heartBeatInterval = heartbeatCb(conn);
 
 	// Calls on msg receive.
 	conn.addListener('text', function(msg) {
@@ -44,19 +48,22 @@ let server = ws.createServer((conn) => {
 		let obj = JSON.parse(msg);
 		switch (obj.type) {
 			case "heartBeat":
-				conn.lastAliveTimeStamp = new Date().getUTCMilliseconds();
-				conn.ping = new Date().getUTCMilliseconds() - obj.timestamp;
+				conn.lastHeartBeatTimeStamp = getCurrentTime();
+				// Calculates ping and stores it in conn obj.
+				conn.ping = getCurrentTime() - obj.timestamp;
 				break;
 			case "log":
 				console.log("[INFO] Message received: " + obj.message);
 				break;
 			case "broadcast":
 				console.log("[INFO] Broadcasting: " + obj.message);
+				conn.lastAliveTimeStamp = getCurrentTime();
 				// Broadcasts messages to clients.
 				broadcast({type: "broadcast", message: obj.message,  from: conn.nickname});
 				break;
 			case "command":
 				console.log("[INFO] Command received: " + obj.label);
+				conn.lastAliveTimeStamp = getCurrentTime();
 				handleCommand(conn, obj);
 				break;
 			default:
@@ -68,6 +75,7 @@ let server = ws.createServer((conn) => {
 	// Calls on connection close.
 	conn.addListener('close', function() {
 		console.log("[INFO] Connection [" + conn.id + "] closed.");
+		clearInterval(conn.heartBeatInterval);
 	});
 
 	// Calls on error occur.
@@ -84,11 +92,31 @@ setInterval(()=>{
 	connections = connections.filter((conn)=>{
 		return conn.readyState !== undefined && conn.readyState !== 3;
 	});
-}, 5000);
 
-// Asks the server to listen to port 8001.
-server.listen(8001);
-console.log("[INFO] Successfully created web socket, listening at 8001.");
+	// Closes connections that are inactive or potentially offline.
+	connections.forEach((conn)=>{
+		if (getCurrentTime() - conn.lastAliveTimeStamp > config.timeout.heartbeat) {
+			if (conn.readyState === 1)
+				conn.close("time out");
+			console.log("[INFO] Connection [" + conn.id + "] terminated due to inactivity.");
+			return;
+		}
+		if (getCurrentTime() - conn.lastHeartBeatTimeStamp > config.timeout.inactivity) {
+			if (conn.readyState === 1)
+				conn.close("time out");
+			console.log("[INFO] Connection [" + conn.id + "] terminated due to heartbeat timeout.");
+			return;
+		}
+	});
+}, config.timeout.checkFrequency);
+
+// Asks the server to listen to port.
+server.listen(config.server.port);
+console.log("[INFO] Successfully created web socket, listening at " + config.server.port + ".");
+
+function getCurrentTime() {
+	return new Date().getTime();
+}
 
 // Sends a json obj to a connection.
 function send(conn, jsonObj) {
