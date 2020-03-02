@@ -4,10 +4,10 @@ module.exports =
 {
 
     "mode": "development",
-    "entry": ["@babel/polyfill","./src/index.ts"],
+    "entry": {index: ["@babel/polyfill", "./src/index.ts"], websocketChat: ["@babel/polyfill", "./src/serverCom/websocketChat.ts"]},
     "output": {
         "path": path.resolve("./"),
-        "filename": "dist/index.js"
+        "filename": "dist/[name].js"
     },
     "module": {
         "rules": [
