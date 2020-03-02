@@ -6,6 +6,12 @@ const sendBtn: HTMLElement = document.getElementById("send-btn");
 const exit: HTMLElement = document.getElementById("exit");
 const receiveBox: HTMLElement = document.getElementById("receive-box");
 
+const pingSection: HTMLElement = document.getElementById("ping");
+const nameSection: HTMLElement = document.getElementById("name");
+const statusSection: HTMLElement = document.getElementById("status");
+const healthSection: HTMLElement = document.getElementById("player-health");
+const manaSection: HTMLElement = document.getElementById("player-mana");
+
 async function readString(url: string): Promise<string> {
     let request: XMLHttpRequest = new XMLHttpRequest();
     // Sets obtain method and url.
@@ -82,10 +88,18 @@ server.init().then(() => {
 
         // Process data.
         let json = JSON.parse(data.data);
+        console.log(data.data);
         switch(json.type) {
             case "heartBeat":
                 // Sending the server timestamp back to server to complete ping test server side.
                 server.sendToServer({type: "heartBeat", timestamp: json.timestamp});
+                return;
+            case "obtainedInfo":
+                pingSection.innerHTML = "<p class='grey'>PING:</p> " + json.ping + "ms";
+                nameSection.innerHTML = "<p class='grey'>CURRENT NAME:</p>  " + json.name;
+                statusSection.innerHTML = "<p class='grey'>CURRENT STATUS:</p>  " + json.status;
+                healthSection.innerHTML = "<p class='grey'>CHARACTER HEALTH:</p>  ";
+                manaSection.innerHTML = "<p class='grey'>CHARACTER MANA:</p>  ";
                 return;
             case "ping":
                 newLine = "[PING] Pong: " + json.value + "ms";
@@ -169,4 +183,8 @@ server.init().then(() => {
         // Request to close socket.
         ws.close();
     };
+
+    setInterval(()=>{
+        server.sendToServer({type: "obtain", target: "info"});
+    }, 1000);
 });

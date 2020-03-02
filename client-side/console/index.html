@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en_GB">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name=viewport content="width=device-width, initial-scale=1">
+        <meta name="description" content="Online card game web project for school. Client side prototype">
+        <meta name="keywords" content="card, phaser, web, game">
+        <meta name="author" content="Rowan, Scott, Charly">
+        <title>Based God Snowy</title>
+        <link rel="stylesheet" type="text/css" href="./style.css">
+    </head>
+
+    <body>
+        <div class="websocket">
+            <div class="info">
+                <div id="ping">Loading...</div>
+                <div id="name">Loading...</div>
+                <div id="status">Loading...</div>
+                <div id="player-health">Loading...</div>
+                <div id="player-mana">Loading...</div>
+            </div>
+            <div class="receive">
+                <h2>Websocket Console</h2>
+                <div id="receive-box"></div>
+            </div>
+            <div class="send">
+                <div id="emoji-box"> </div>
+                <textarea type="text" id="msg-need-send"></textarea>
+                <p> <button id="send-btn">Send</button> </p>
+            </div>
+            <button id="exit">Close Connection</button>
+        </div>
+        <script src="../src/serverCom/websocketChat.ts"> </script>
+    </body>
+</html>

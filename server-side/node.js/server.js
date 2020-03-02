@@ -13,10 +13,6 @@ let config = {
 	}
 };
 
-let emojis = new Array();
-emojis.push("https://cdn.discordapp.com/attachments/683354798728413198/684034961715625984/Me.png");
-emojis.push("https://cdn.discordapp.com/attachments/683354798728413198/684034961715625984/Me.png");
-
 // Require needed files, important websocket stuff, initialization of websocket.
 let ws = require("nodejs-websocket");
 console.log("[INFO] Initializing web socket...");
@@ -58,6 +54,25 @@ let server = ws.createServer((conn) => {
 				conn.lastHeartBeatTimeStamp = getCurrentTime();
 				// Calculates ping and stores it in conn obj.
 				conn.ping = getCurrentTime() - obj.timestamp;
+				break;
+			case "obtain":
+				switch(obj.target) {
+					case "info":
+						send(conn, {
+							type: "obtainedInfo",
+							ping: conn.ping,
+							name: conn.nickname,
+							status: conn.status
+						});
+						break;
+					case "player":
+						send(conn,{
+							type: "player",
+							health: conn.player.health,
+							mana: conn.player.mana
+						});
+						break;
+				}
 				break;
 			case "log":
 				console.log("[INFO] Message received: " + obj.message);
