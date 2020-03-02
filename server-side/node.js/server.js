@@ -95,13 +95,13 @@ setInterval(()=>{
 
 	// Closes connections that are inactive or potentially offline.
 	connections.forEach((conn)=>{
-		if (getCurrentTime() - conn.lastAliveTimeStamp > config.timeout.heartbeat) {
+		if (getCurrentTime() - conn.lastAliveTimeStamp > config.timeout.inactivity) {
 			if (conn.readyState === 1)
 				conn.close("time out");
 			console.log("[INFO] Connection [" + conn.id + "] terminated due to inactivity.");
 			return;
 		}
-		if (getCurrentTime() - conn.lastHeartBeatTimeStamp > config.timeout.inactivity) {
+		if (getCurrentTime() - conn.lastHeartBeatTimeStamp > config.timeout.heartbeat) {
 			if (conn.readyState === 1)
 				conn.close("time out");
 			console.log("[INFO] Connection [" + conn.id + "] terminated due to heartbeat timeout.");
