@@ -29,14 +29,34 @@ export class serverCom {
             // Listener for when server shuts down.
             this.ws.onclose = () => {
                 console.log("Server closed.");
+                this.ws.close();
             };
+
+            window.onbeforeunload = () => {
+                this.ws.close();
+            }
         }
     }
 
     // Function for sending an object info to server.
-    public sendToServer(output: {}): void {
+    public sendToServer(jsonObj: {}): void {
         // Output prep section. Encoding can be added in the future.
-        console.log(JSON.stringify(output));
-        this.ws.send(JSON.stringify(output));
+        //console.log(JSON.stringify(jsonObj));
+        this.ws.send(JSON.stringify(jsonObj));
+    }
+
+    public sendChat(msg: string): void {
+        this.sendToServer({ type: "broadcast", message: msg });
+    }
+
+    public sendCommand(cmd: string): void {
+        let spaceIdx: number = cmd.indexOf(' ');
+        let label: string = cmd.substr(1);
+        let args: string = cmd.substr(spaceIdx + 1);
+        if (spaceIdx >= 1)
+            label = cmd.substr(1, spaceIdx - 1);
+        else
+            args = "";
+        this.sendToServer({ type: "command", label: label, args: args });
     }
 }
