@@ -74,7 +74,6 @@ server.init().then(() => {
             if (cmdIdxPtr < cmdHis.length - 1) {
                 cmdIdxPtr++;
                 (<HTMLInputElement> msgBox).value = cmdHis[cmdIdxPtr];
-                console.log(cmdIdxPtr, cmdHis.length);
                 return false;
             }
             cmdIdxPtr = cmdHis.length;
