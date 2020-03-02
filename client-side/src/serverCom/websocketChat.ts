@@ -57,21 +57,18 @@ let emojiList = [];
 // Obtain emoji list from server.
 readJSON("//www.empiraft.com/resources/card_game/json/?file=emojis").then((result)=>{
     emojiList = result.emojis;
-
     // Create emojis from the list.
     let emojiBox: HTMLElement = document.getElementById("emoji-box");
     emojiBox.innerHTML = "";
     for (let i: number = 0; i < emojiList.length; i++) {
         emojiBox.innerHTML += "<img class='emoji' src='" + emojiList[i] + "'/>";
     }
-
     let emojiItems: HTMLCollection = emojiBox.children;
-
     // Let emoji buttons work.
     for (let i:number = 0; i < emojiItems.length; i++) {
         (<HTMLElement>emojiItems.item(i)).onclick = () => {
             server.sendToServer({type: "emoji", value: i});
-        }
+        };
     }
 });
 

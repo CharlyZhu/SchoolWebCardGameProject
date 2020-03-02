@@ -82,6 +82,15 @@ img.emoji {
     margin: 10px 20px;
 }
 
+.cards {
+    position: fixed;
+    bottom: 50px; left: 0;
+    width: 100%;
+    height: 50px;
+    background-color: #6f0d00;
+    overflow: auto;
+}
+
 .grey {
     color: #c3c3bd;
     font-weight: bold;
