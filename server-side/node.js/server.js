@@ -36,7 +36,7 @@ let server = ws.createServer((conn) => {
 	conn.lastHeartBeatTimeStamp = getCurrentTime();
 	console.log("[INFO] New connection established with ID number [" + conn.id + "].");
 	send(conn, {type: "info", message: "Your assigned ID is [" + conn.id + "], there are currently " + connections.length + " online connection(s)."});
-	broadcast({type: "broadcast", message: "New connection joined with ID " + conn.id, from: conn.nickname});
+	broadcast({type: "broadcast", message: "New connection joined with ID number [" + conn.id + "].", from: conn.nickname});
 
 	// Start heart beat checking.
 	conn.heartBeatInterval = heartbeatCb(conn);
