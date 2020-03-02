@@ -1,0 +1,7 @@
+{
+  "name": "Recycle",
+  "uid": "0005",
+  "manaCost": 2,
+  "effects": { "discard": 2, "draw": 2 },
+  "imageURL": "https://www.empiraft.com/rowan/img/about_img.jpg"
+}

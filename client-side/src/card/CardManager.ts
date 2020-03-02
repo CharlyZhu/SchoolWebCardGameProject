@@ -1,6 +1,16 @@
 import { Card } from "./card";
 import "resources"
 
+export interface ICard {
+
+  name: string;
+  uid: string;
+  manaCost: number;
+  effects: {};
+  imageURL: string;
+
+}
+
 export class CardManager {
 
   public arrCard: Card[] = [];
@@ -12,7 +22,7 @@ export class CardManager {
       for (let i = 1; i < 6; i++ ) 
       {
 
-        this.arrCard.push()
+      
 
       }
 
