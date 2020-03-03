@@ -1,55 +1,50 @@
 export class WebSocketServer {
-    ws: WebSocket;
+    private _ws: WebSocket;
 
-    // Initializes websocket.
-    public async init(): Promise<void> {
+    // Initializes websocket and applies a response handler.
+    public async init(responseHandler: (response: string)=>void): Promise<void> {
         if (window.WebSocket) {
-            this.ws = new WebSocket("ws://54.37.66.227:8001");
+            this._ws = new WebSocket("ws://54.37.66.227:8001");
             //this.ws = new WebSocket("ws://localhost:8001");
 
             await new Promise<void>((resolve, reject) => {
                 // Listener for when connection is made and the server is open.
-                this.ws.onopen = e => {
-                    console.log("Connected to server at " + this.ws.url + ".");
+                this._ws.onopen = () => {
+                    console.log("Connected to server at " + this._ws.url + ".");
                     resolve();
                 };
 
                 // Listener for when error occurs.
-                this.ws.onerror = () => {
-                    console.log("Connection failed when connecting to " + this.ws.url + ".");
+                this._ws.onerror = () => {
+                    console.log("Connection failed when connecting to " + this._ws.url + ".");
                     reject();
                 };
             });
 
             // Listener for when server sends back a message.
-            this.ws.onmessage = e => {
-                let data = JSON.stringify(e.data);
-                console.log("MSG：" + data);
-            };
+            this._ws.onmessage = data => responseHandler(data.data.toString());
 
             // Callback function for when server shuts down.
-            this.ws.onclose = () => {
-                this.ws.close();
+            this._ws.onclose = () => {
+                this._ws.close();
                 console.log("You have lost connection to the remote server.");
             };
 
             // Sets that websocket closes before page closes.
-            window.onbeforeunload = () => this.ws.close();
-
+            window.onbeforeunload = () => this._ws.close();
         }
     }
 
     // Function for sending an object info to server.
     public sendToServer(jsonObj: {}): void {
         // Output prep section. Encoding can be added in the future.
-        //console.log(JSON.stringify(jsonObj));
-        if (this.ws.readyState !== this.ws.OPEN)
+        if (this._ws.readyState !== this._ws.OPEN)
             return;
-        this.ws.send(JSON.stringify(jsonObj));
+        this._ws.send(JSON.stringify(jsonObj));
     }
 
     public close() {
-        this.ws.close();
+        this._ws.close();
     }
 
     private sendChat(msg: string): void {
@@ -73,5 +68,16 @@ export class WebSocketServer {
             this.sendChat(msg);
         else
             this.sendCommand(msg);
+    }
+
+    // Sends server some object once every certain intervals.
+    public setTimerTask(jsonObj, interval: number, endCb: ()=>void) {
+        let checker = setInterval(()=>{
+            this.sendToServer(jsonObj);
+            if (this._ws.readyState === this._ws.CLOSED) {
+                clearInterval(checker);
+                endCb();
+            }
+        }, interval);
     }
 }

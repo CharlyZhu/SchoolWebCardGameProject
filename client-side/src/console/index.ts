@@ -5,25 +5,33 @@ import { ConsolePlayer } from "../player/impl/ConsolePlayer";
 import { handleResponse, setConnectionDetails } from "./responseHandler";
 import { obtainCardList } from "../card/CardManager";
 
+// Load stuff. TODO: Move to another location.
+let loadProgressPercent = 0;
+const loadSection: HTMLElement = document.querySelector("#load");
+function addLoadProgress(progress: number) {
+    loadProgressPercent += progress;
+    loadSection.innerText = "Loaded: " + loadProgressPercent + "%";
+}
+
 // Declare variables.
-export const server = new WebSocketServer();
 export const player = new ConsolePlayer();
+export const server = new WebSocketServer();
 
 // Chain of method calls, call whats needed first then the next.
 obtainCardList().then(()=>{
-    setupEmojiBox().then(()=>server.init().then(serverSetupCb));
+    addLoadProgress(30);
+    setupEmojiBox().then(()=>{
+        addLoadProgress(30);
+        server.init((response)=>handleResponse(response)).then(()=> {
+            addLoadProgress(30);
+            serverSetupCb(server);
+        });
+    });
 });
 
 // Callback function that runs after server initialization.
-const serverSetupCb =()=>{
+function serverSetupCb(server) {
     setupInputControl();
-    // Calls when message received from server.
-    server.ws.onmessage = (data) => handleResponse(data.data.toString());
-    let checker = setInterval(()=>{
-        server.sendToServer({type: "obtain", target: "info"});
-        if (server.ws.readyState === server.ws.CLOSED) {
-            clearInterval(checker);
-            setConnectionDetails("-", "-", "DISCONNECTED");
-        }
-    }, 1000);
-};
+    server.setTimerTask({type: "obtain", target: "info"}, 1000, ()=>setConnectionDetails("-", "-", "DISCONNECTED"));
+    addLoadProgress(10);
+}
