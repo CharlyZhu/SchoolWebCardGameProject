@@ -9,8 +9,8 @@ const receiveBox: HTMLElement = document.getElementById("receive-box");
 const pingSection: HTMLElement = document.getElementById("ping");
 const nameSection: HTMLElement = document.getElementById("name");
 const statusSection: HTMLElement = document.getElementById("status");
-const healthSection: HTMLElement = document.getElementById("player-health");
-const manaSection: HTMLElement = document.getElementById("player-mana");
+
+const gameDetails: NodeListOf<HTMLElement> = document.querySelectorAll("#game .details p");
 
 async function readString(url: string): Promise<string> {
     let request: XMLHttpRequest = new XMLHttpRequest();
@@ -72,6 +72,34 @@ readJSON("//www.empiraft.com/resources/card_game/json/?file=emojis").then((resul
     }
 });
 
+let cardsList = [];
+// Obtain cards list from server.
+readJSON("//www.empiraft.com/resources/card_game/json/?file=cards").then((result)=>{
+    cardsList = result.cards;
+    // Create cards from the list.
+});
+
+const addCard = (cardId: number): void => {
+    let cardBox: HTMLElement = document.getElementById("game");
+    cardBox.innerHTML += "<div class='card'><img src='//www.empiraft.com/resources/card_game/json/" + cardsList[cardId].imgUrl + "' /></div>";
+    reassignCardOnClickCb();
+};
+
+const removeCard = (slotId: number): void => {
+    let cardBox: HTMLElement = document.getElementById("game");
+    cardBox.children[slotId].remove();
+    reassignCardOnClickCb();
+};
+
+const reassignCardOnClickCb = (): void => {
+    let handCards: HTMLCollection = document.getElementById("game").children;
+    if (handCards.length <= 1)
+        return;
+    for (let i: number = 1; i < handCards.length; i++) {
+        (<HTMLElement>handCards.item(i)).onclick = () => { server.sendToServer({type: "game", action: "play-card", value: i - 1}); };
+    }
+};
+
 // Web server stuff:
 const server = new serverCom();
 let ws: WebSocket = null;
@@ -85,7 +113,6 @@ server.init().then(() => {
 
         // Process data.
         let json = JSON.parse(data.data);
-        console.log(data.data);
         switch(json.type) {
             case "heartBeat":
                 // Sending the server timestamp back to server to complete ping test server side.
@@ -95,8 +122,6 @@ server.init().then(() => {
                 pingSection.innerHTML = "<p class='grey'>PING:</p> " + json.ping + "ms";
                 nameSection.innerHTML = "<p class='grey'>CURRENT NAME:</p>  " + json.name;
                 statusSection.innerHTML = "<p class='grey'>CURRENT STATUS:</p>  " + json.status;
-                healthSection.innerHTML = "<p class='grey'>CHARACTER HEALTH:</p>  ";
-                manaSection.innerHTML = "<p class='grey'>CHARACTER MANA:</p>  ";
                 return;
             case "ping":
                 newLine = "[PING] Pong: " + json.value + "ms";
@@ -116,8 +141,26 @@ server.init().then(() => {
             case "link":
                 newLine = "[LINK] [" + json.from + "] <a href='" + json.message + "' target='_blank'> "+ json.message +" </a>";
                 break;
+            case "game":
+                switch (json.action) {
+                    case "draw":
+                        addCard(json.value);
+                        break;
+                    case "remove":
+                        removeCard(json.value + 1);
+                        break;
+                    case "info":
+                        gameDetails.item(0).innerHTML = "<p class='grey'>HEALTH:</p> " + json.value.health;
+                        gameDetails.item(1).innerHTML = "<p class='grey'>MANA:</p> " + json.value.mana;
+                        gameDetails.item(2).innerHTML = "<p class='grey'>CARDS LEFT:</p> " + json.value.cardsLeft;
+                        gameDetails.item(3).innerHTML = "<p class='grey'>ENEMY HEALTH:</p> " + json.value.enemyHealth;
+                        gameDetails.item(4).innerHTML = "<p class='grey'>ENEMY MANA:</p> " + json.value.enemyMana;
+                        gameDetails.item(5).innerHTML = "<p class='grey'>ENEMY CARDS LEFT:</p> " + json.value.enemyCardsLeft;
+                        break;
+                }
+                break;
         }
-
+        console.log(JSON.stringify(json));
         // When server feeds back data, this logs data inside HTML.
         receiveBox.innerHTML += `<p>${newLine}</p>`;
         receiveBox.scrollTo({
