@@ -231,7 +231,14 @@ server.init().then(() => {
         ws.close();
     };
 
-    setInterval(()=>{
+    let checker = setInterval(()=>{
         server.sendToServer({type: "obtain", target: "info"});
+
+        if (server.ws.readyState === server.ws.CLOSED) {
+            clearInterval(checker);
+            pingSection.innerHTML = "<p class='grey'>PING:</p> -ms";
+            nameSection.innerHTML = "<p class='grey'>CURRENT NAME:</p>  -";
+            statusSection.innerHTML = "<p class='grey'>CURRENT STATUS:</p>  DISCONNECTED";
+        }
     }, 1000);
 });
