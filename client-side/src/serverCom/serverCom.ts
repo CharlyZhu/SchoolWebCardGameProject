@@ -42,6 +42,8 @@ export class serverCom {
     public sendToServer(jsonObj: {}): void {
         // Output prep section. Encoding can be added in the future.
         //console.log(JSON.stringify(jsonObj));
+        if (this.ws.readyState !== this.ws.OPEN)
+            return;
         this.ws.send(JSON.stringify(jsonObj));
     }
 

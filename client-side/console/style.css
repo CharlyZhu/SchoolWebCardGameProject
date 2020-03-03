@@ -29,7 +29,12 @@ body {
 }
 
 #receive-box img {
-    max-width: 100px;
+    height: 100px;
+    transition-duration: 0.4s;
+}
+
+#receive-box img:hover {
+    transform: translate(60px, 0) scale(3);
 }
 
 #emoji-box {
@@ -41,8 +46,8 @@ body {
 
 /* This is actually being used as all emoji stuff are created on the fly */
 img.emoji {
-    width: 30px;
-    height: 30px;
+    max-height: 30px;
+    max-width: 30px;
 }
 
 #msg-need-send {
@@ -107,7 +112,7 @@ img.emoji {
 }
 
 #game .card img {
-    width: 110px;
+    height: 150px;
 }
 
 #game .details {

@@ -1,5 +1,6 @@
 import { serverCom } from "./serverCom";
 import { setCookie, getCookie } from "../util";
+import $ from "jquery";
 
 const msgBox: HTMLElement = document.getElementById("msg-need-send");
 const sendBtn: HTMLElement = document.getElementById("send-btn");
@@ -103,7 +104,7 @@ const reassignCardOnClickCb = (): void => {
 // Web server stuff:
 const server = new serverCom();
 let ws: WebSocket = null;
-
+let scrollHeight: number = 0;
 server.init().then(() => {
     ws = server.ws;
 
@@ -160,13 +161,19 @@ server.init().then(() => {
                 }
                 break;
         }
+        if (newLine === "")
+            return;
         console.log(JSON.stringify(json));
+
         // When server feeds back data, this logs data inside HTML.
         receiveBox.innerHTML += `<p>${newLine}</p>`;
+        let newChild: ChildNode = receiveBox.lastChild;
+        scrollHeight += $(<HTMLElement>newChild).outerHeight(true);;
         receiveBox.scrollTo({
-            top: receiveBox.scrollHeight,
+            top: scrollHeight,
             behavior: "smooth"
         });
+        console.log(scrollHeight)
     };
 
     // Key press listener.
