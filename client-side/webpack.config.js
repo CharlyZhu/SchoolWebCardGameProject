@@ -1,7 +1,6 @@
 const path = require("path");
 const webpack = require("webpack");
 module.exports = {
-
     "mode": "development",
     "entry": { game: ["@babel/polyfill", "./src/index.ts"], console: ["@babel/polyfill", "./src/console/index.ts"] },
     "output": {

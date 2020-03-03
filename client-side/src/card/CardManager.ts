@@ -8,9 +8,12 @@ export let cardsList: Array;
 // Defines important variables.
 const cardJsonUrl = "//www.empiraft.com/resources/card_game/json/?file=cards";
 // Obtains the card list from online JSON files, storing card information in variable cardsList.
-export function obtainCardList(): void {
-    readJSON(cardJsonUrl).then((result)=>{
-        cardsList = result.cards;
+export function obtainCardList(): Promise<void> {
+    return new Promise<void>((resolve)=>{
+        readJSON(cardJsonUrl).then((result)=>{
+            cardsList = result.cards;
+            resolve();
+        });
     });
 }
 

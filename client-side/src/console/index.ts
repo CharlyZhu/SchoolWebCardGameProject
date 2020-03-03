@@ -5,19 +5,20 @@ import { ConsolePlayer } from "../player/impl/ConsolePlayer";
 import { handleResponse, setConnectionDetails } from "./responseHandler";
 import { obtainCardList } from "../card/CardManager";
 
-// Things that has to be loaded before server init. Should move to a promise thing later.
-setupEmojiBox(document.querySelector("#emoji-box"));
-obtainCardList();
-
-// Web server stuff:
+// Declare variables.
 export const server = new WebSocketServer();
 export const player = new ConsolePlayer();
-server.init().then(() => {
-    setupInputControl();
 
+// Chain of method calls, call whats needed first then the next.
+obtainCardList().then(()=>{
+    setupEmojiBox().then(()=>server.init().then(serverSetupCb));
+});
+
+// Callback function that runs after server initialization.
+const serverSetupCb =()=>{
+    setupInputControl();
     // Calls when message received from server.
     server.ws.onmessage = (data) => handleResponse(data.data.toString());
-
     let checker = setInterval(()=>{
         server.sendToServer({type: "obtain", target: "info"});
         if (server.ws.readyState === server.ws.CLOSED) {
@@ -25,4 +26,4 @@ server.init().then(() => {
             setConnectionDetails("-", "-", "DISCONNECTED");
         }
     }, 1000);
-});
+};
