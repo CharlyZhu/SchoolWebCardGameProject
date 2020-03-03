@@ -1,6 +1,7 @@
-export class serverCom {
+export class WebSocketServer {
     ws: WebSocket;
 
+    // Initializes websocket.
     public async init(): Promise<void> {
         if (window.WebSocket) {
             this.ws = new WebSocket("ws://54.37.66.227:8001");
@@ -26,15 +27,15 @@ export class serverCom {
                 console.log("MSG：" + data);
             };
 
-            // Listener for when server shuts down.
+            // Callback function for when server shuts down.
             this.ws.onclose = () => {
-                console.log("Server closed.");
                 this.ws.close();
+                console.log("You have lost connection to the remote server.");
             };
 
-            window.onbeforeunload = () => {
-                this.ws.close();
-            }
+            // Sets that websocket closes before page closes.
+            window.onbeforeunload = () => this.ws.close();
+
         }
     }
 
@@ -47,11 +48,15 @@ export class serverCom {
         this.ws.send(JSON.stringify(jsonObj));
     }
 
-    public sendChat(msg: string): void {
+    public close() {
+        this.ws.close();
+    }
+
+    private sendChat(msg: string): void {
         this.sendToServer({ type: "broadcast", message: msg });
     }
 
-    public sendCommand(cmd: string): void {
+    private sendCommand(cmd: string): void {
         let spaceIdx: number = cmd.indexOf(' ');
         let label: string = cmd.substr(1);
         let args: string = cmd.substr(spaceIdx + 1);
@@ -60,5 +65,13 @@ export class serverCom {
         else
             args = "";
         this.sendToServer({ type: "command", label: label, args: args });
+    }
+
+    // Auto decide upon whether to treat message as command or message.
+    public sendMsg(msg: string): void{
+        if (!msg.startsWith('/'))
+            this.sendChat(msg);
+        else
+            this.sendCommand(msg);
     }
 }

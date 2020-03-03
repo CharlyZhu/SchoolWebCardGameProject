@@ -51,3 +51,33 @@ export function checkAgainstServer(requestObj, receiveCb)
 
     });
 }
+
+export async function readString(url: string): Promise<string> {
+    let request: XMLHttpRequest = new XMLHttpRequest();
+    // Sets obtain method and url.
+    request.open("get", url);
+    // Sets send body (data) to nothing.
+    request.send(null);
+    return await new Promise<string>((resolve, reject)=>{
+        // Sets callback on XHR object message return.
+        request.onload = function () {
+            // If status returned is 200, data is successfully obtained.
+            if (request.status == 200) {
+                let jsonStr = request.responseText;
+                if (jsonStr !== "")
+                    resolve(jsonStr);
+            }
+            reject("");
+        };
+    });
+}
+
+export async function readJSON(url: string): Promise<{}> {
+    return await new Promise<{}>((resolve, reject)=>{
+        readString(url).then((jsonStr)=>{
+            resolve(JSON.parse(jsonStr));
+        }).catch(()=>{
+            reject({});
+        });
+    });
+}
