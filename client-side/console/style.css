@@ -34,7 +34,7 @@ body {
 }
 
 #receive-box img:hover {
-    transform: translate(60px, 0) scale(3);
+    transform: translate(85%, 0) scale(3);
 }
 
 #emoji-box {
