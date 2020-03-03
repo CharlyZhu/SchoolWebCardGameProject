@@ -1,4 +1,4 @@
-import { serverCom } from "./serverCom";
+import { serverCom } from "../serverCom/serverCom";
 import { setCookie, getCookie } from "../util";
 import $ from "jquery";
 

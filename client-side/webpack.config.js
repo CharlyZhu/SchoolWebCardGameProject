@@ -1,17 +1,15 @@
 const path = require("path");
 const webpack = require("webpack");
-module.exports =
-{
+module.exports = {
 
     "mode": "development",
-    "entry": {index: ["@babel/polyfill", "./src/index.ts"], websocketChat: ["@babel/polyfill", "./src/serverCom/websocketChat.ts"]},
+    "entry": { game: ["@babel/polyfill", "./src/index.ts"], console: ["@babel/polyfill", "./src/console/index.ts"] },
     "output": {
         "path": path.resolve("./"),
         "filename": "dist/[name].js"
     },
     "module": {
-        "rules": [
-            {
+        "rules": [{
                 "test":/\.ts$|\.js$/,
                 "exclude": /node_modules/,
                 "use": {
