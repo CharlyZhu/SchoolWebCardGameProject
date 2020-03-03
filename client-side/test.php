@@ -11,7 +11,7 @@
         <meta name="author" content="Rowan, Scott, Charly">
         <title>Based God Snowy</title>
         <link rel="shortcut icon" href="client-side/images/favicon.ico">
-        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/index.css">
         <style type="text/css">
             body {
                 background: url("https://www.empiraft.com/rowan/img/about_img.jpg");

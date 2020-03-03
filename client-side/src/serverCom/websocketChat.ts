@@ -213,6 +213,10 @@ server.init().then(() => {
             // If new input is not identical to the last input recorded, input to input history for future use.
             if (input !== cmdHis[cmdHis.length - 1]) {
                 cmdHis.push(input);
+                if (cmdHis.length > 30)
+                    cmdHis.shift();
+                if (cmdHis.length > 33)
+                    setCookie("command_history", "", 1000 * 60 * 60 * 24);
                 setCookie("command_history", JSON.stringify({history: cmdHis, ptr: cmdIdxPtr}), 1000 * 60 * 60 * 24);
             }
             cmdIdxPtr = cmdHis.length;
