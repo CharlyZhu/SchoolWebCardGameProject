@@ -30,16 +30,21 @@ export function setupInputControl() {
     // Set callbacks when key board is pressed.
     document.onkeydown = function (event: KeyboardEvent) {
         // Calls on enter pressed, sends the message in the chat box.
-        setKeyboardPressCb(event, "Enter", sendBtn.click);
-        // Calls on up arrow is pressed, moves the ptr up and apply last input history to msgBox if there is any.
-        setKeyboardPressCb(event, "ArrowUp", ()=>{
+        if (event && event.key === "Enter") {
+            sendBtn.click();
+            // Cancels key press event so that enter does not get logged.
+            return false;
+        }
+        // Calls on up arrow is pressed, moves the ptr up and apply last input history to msgBox if there is an
+        if (event && event.key === "ArrowUp") {
             if (inputHistoryListPtr > 0) {
                 inputHistoryListPtr--;
                 msgBox.value = inputHistoryList[inputHistoryListPtr];
             }
-        });
+            return false;
+        }
         // Calls on down arrow is pressed, moves the ptr down and apply next input history to msgBox if there is any.
-        setKeyboardPressCb(event, "ArrowDown", ()=>{
+        if (event && event.key === "ArrowDown") {
             if (inputHistoryListPtr < inputHistoryList.length - 1) {
                 inputHistoryListPtr++;
                 msgBox.value = inputHistoryList[inputHistoryListPtr];
@@ -48,9 +53,8 @@ export function setupInputControl() {
             // If pointer points to the last history, make pointer the length of the history (index + 1) and set value to empty.
             inputHistoryListPtr = inputHistoryList.length;
             msgBox.value = "";
-        });
-        // Cancels key press event so that enter does not get logged etc.
-        return false;
+            return false;
+        }
     };
 
     // Runs callback function if event.key matches the keyName variable.
