@@ -1,5 +1,5 @@
 import "phaser";
-import { serverCom } from "./serverCom/serverCom";
+import { WebSocketServer } from "./network/WebSocketServer";
 import { Loader } from "./scenes/loader";
 
 const initGame = () => {
@@ -17,7 +17,7 @@ const initGame = () => {
   game.scene.add("loader", loader, true);
 
   // Webserver stuff:
-  const server = new serverCom();
+  const server = new WebSocketServer();
   server.init().then(() => {
     server.sendToServer({ type: "log", message: "Rowan sends his regards" });
   });

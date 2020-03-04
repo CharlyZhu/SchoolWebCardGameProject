@@ -8,18 +8,16 @@
         <meta name="keywords" content="card, phaser, web, game">
         <meta name="author" content="Rowan, Scott, Charly">
         <title>Based God Snowy</title>
-        <link rel="stylesheet" type="text/css" href="./style.css">
+        <link rel="shortcut icon" href="./images/favicon.ico">
+        <link rel="stylesheet" type="text/css" href="./css/console.css">
     </head>
 
     <body>
         <div class="websocket">
             <div id="particles-js"></div>
-            <div class="info">
-                <div id="ping">Loading...</div>
-                <div id="name">Loading...</div>
-                <div id="status">Loading...</div>
-                <div id="player-health">Loading...</div>
-                <div id="player-mana">Loading...</div>
+            <div class="info"></div>
+            <div id="game">
+                <div class="details"></div>
             </div>
             <div class="receive">
                 <h2>Websocket Console</h2>
@@ -32,7 +30,7 @@
             </div>
             <button id="exit">Close Connection</button>
         </div>
-        <script src="../dist/websocketChat.js"> </script>
+        <script src="dist/console.js"> </script>
         <!--script src="../dist/jq.min.js"> </script>
         <script src="../dist/particle-min.js"> </script>
         <script src="../dist/particle-dust.js"> </script-->

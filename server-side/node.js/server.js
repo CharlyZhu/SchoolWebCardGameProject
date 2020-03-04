@@ -13,6 +13,76 @@ let config = {
 	}
 };
 
+let cardDeck;
+let cardList;
+
+let http = require("http");
+async function readString(host, path) {
+	return await new Promise((resolve, reject)=>{
+		let request = http.request({host: host, path: path}, function (response) {
+			let data = '';
+			response.on('data', function (chunk) {
+				data += chunk;
+			});
+			response.on('end', function () {
+				resolve(data);
+			});
+		});
+		request.on('error', (error)=>{
+			reject(error);
+		});
+		request.end();
+	});
+}
+
+async function readJSON(host, path) {
+	return await new Promise((resolve, reject)=>{
+		readString(host, path).then((jsonStr)=>{
+			resolve(JSON.parse(jsonStr));
+		}).catch((error)=>{
+			reject(error);
+		});
+	});
+}
+
+// Setup basic card stuff.
+readJSON("www.empiraft.com", "/resources/card_game/json/?file=cards").then((result)=>{
+	cardDeck = result.deck;
+	cardList = result.cards;
+}).catch((error) =>{
+	console.log("error: " + error.stack);
+});
+
+const drawCardsForConn = (conn, amount) => {
+	for (let i = 0; i < amount; i++) {
+		let cardId = getRandomCardFromDeck(conn);
+		send(conn, {type: "game", action: "draw", value: cardId - 1});
+		conn.deck[cardId] -= 1;
+		conn.cards.push(cardId);
+	}
+};
+
+const getRandomCardFromDeck = (conn) => {
+	if (getCardsLeft(conn) === 0)
+		return;
+	let cardID = 0;
+	do {
+		cardID = Math.floor(Math.random() * 6 + 1);
+	} while (conn.deck[cardID] === undefined || conn.deck[cardID] <= 0);
+	console.log(cardID, "cards id");
+	return cardID;
+};
+
+const getCardsLeft = (conn) => {
+	let value = 0;
+	for (let i = 1; i <= 6; i++) {
+		value += conn.deck[i];
+	}
+	console.log(conn.deck);
+	console.log(value, "cards left");
+	return value;
+};
+
 // Require needed files, important websocket stuff, initialization of websocket.
 let ws = require("nodejs-websocket");
 console.log("[INFO] Initializing web socket...");
@@ -37,6 +107,9 @@ let server = ws.createServer((conn) => {
 	conn.lastAliveTimeStamp = getCurrentTime();
 	conn.lastHeartBeatTimeStamp = getCurrentTime();
 	conn.iAmHacker = false;
+	conn.deck = Object.assign({}, cardDeck);
+	conn.cards = Array();
+	drawCardsForConn(conn, 3);
 	console.log("[INFO] New connection established with ID number [" + conn.id + "].");
 	send(conn, {type: "info", message: "Your assigned ID is [" + conn.id + "], there are currently " + connections.length + " online connection(s)."});
 	broadcast({type: "broadcast", message: "New connection joined with ID number [" + conn.id + "].", from: conn.nickname});
@@ -98,6 +171,19 @@ let server = ws.createServer((conn) => {
 				conn.lastAliveTimeStamp = getCurrentTime();
 				broadcast({type: "emoji", value: obj.value,  from: conn.nickname});
 				break;
+			case "game":
+				switch (obj.action) {
+					case "play-card":
+						send(conn, {type: "game", action: "remove", value: obj.value});
+						console.log(conn.cards, obj.value, conn.cards[obj.value], cardList[conn.cards[obj.value] - 1]);
+						broadcast({type: "img", message: "https://www.empiraft.com/resources/card_game/json/" + cardList[conn.cards[obj.value] - 1].imgUrl,  from: conn.nickname});
+						conn.cards.splice(obj.value, 1);
+						drawCardsForConn(conn, 1);
+						break;
+					case "end-turn":
+						break;
+				}
+				break;
 			default:
 				console.log("[INFO] Unknown typed text received: " + msg);
 				break;
@@ -114,7 +200,7 @@ let server = ws.createServer((conn) => {
 	conn.addListener('error', (e) => {
 		console.log("[ERROR] Connection [" + conn.id + "] produced error:");
 		console.log(e);
-        conn.close();
+		conn.close();
 	});
 });
 
