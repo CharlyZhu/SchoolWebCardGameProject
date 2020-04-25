@@ -1,4 +1,8 @@
-export class Card {
+import { MainScene } from "../scenes/MainScene";
+
+export default class Card extends Phaser.GameObjects.Image {
+  public isRevealed: boolean;
+
   public name: string;
   public uid: number;
   public manaCost: number;
@@ -6,20 +10,34 @@ export class Card {
   public imageURL: string;
   public cardGraphics: Phaser.GameObjects.Graphics;
 
-  public constructor(JSONString: string) {
-    let cardJSON = JSON.parse(JSONString);
+  public constructor(
+    //JSONString: string,
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    textureID: string
+  ) {
+    super(scene, x, y, textureID);
 
-    this.name = cardJSON.name;
+    // let cardJSON = JSON.parse(JSONString);
 
-    this.uid = cardJSON.uid;
+    // this.name = cardJSON.name;
 
-    this.manaCost = cardJSON.manaCost;
+    // this.uid = cardJSON.uid;
 
-    this.effects = cardJSON.effects;
+    // this.manaCost = cardJSON.manaCost;
 
-    this.imageURL = cardJSON.imageURL;
+    // this.effects = cardJSON.effects;
+
+    // this.imageURL = cardJSON.imageURL;
 
     //this.cardGraphics = new Phaser.GameObjects.Graphics()
+
+    this.setInteractive();
+    this.on("pointerdown", () => {
+      this.cardClicked();
+      this.setInteractive(false);
+    });
   }
 
   public toString(): string {
@@ -35,5 +53,13 @@ export class Card {
       "\nImage Url: " +
       this.imageURL
     );
+  }
+
+  public playCard(): void {
+    this.alpha = 0;
+  }
+
+  public cardClicked(): void {
+    this.playCard();
   }
 }

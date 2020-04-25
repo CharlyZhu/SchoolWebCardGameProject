@@ -21,7 +21,7 @@ const initGame = () => {
   const main = new MainScene();
 
   game.scene.add("loader", loader, true);
-  game.scene.add("mainscene", main, true);
+  game.scene.add("mainscene", main);
 
   // Webserver stuff:
   const server = new WebSocketServer();

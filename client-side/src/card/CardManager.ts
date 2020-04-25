@@ -1,4 +1,4 @@
-import { Card } from "./card";
+import { Card } from "./Card";
 import { readJSON } from "../util";
 
 // This dictionary should contain all the card information there is in the whole game.

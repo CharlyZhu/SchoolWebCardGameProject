@@ -1,8 +1,10 @@
 import { ICard } from "../card/CardManager";
-import { Card } from "../card/card";
 import { GameObjects } from "phaser";
+import Card from "../card/Card";
 
 export class MainScene extends Phaser.Scene {
+  private _playerHand: Card[] = [];
+
   constructor() {
     super("mainscene");
   }
@@ -33,21 +35,15 @@ export class MainScene extends Phaser.Scene {
     const opponentZone = this.add.image(600, 100, "sqrblue");
     deck.scaleX = 0.5;
     deck.scaleY = 0.8;
+    console.log("UI added");
 
-    const card1 = this.add.image(400, 500, "dummycard");
-    card1.scale = 0.3;
-
-    const card2 = this.add.image(500, 500, "dummycard");
-    card2.scale = 0.3;
-
-    const card3 = this.add.image(600, 500, "dummycard");
-    card3.scale = 0.3;
-
-    const card4 = this.add.image(700, 500, "dummycard");
-    card4.scale = 0.3;
-
-    const card5 = this.add.image(800, 500, "dummycard");
-    card5.scale = 0.3;
+    for (let i = 0; i < 5; i++) {
+      const card = new Card(this, i * 100 + 400, 500, "dummycard");
+      card.scale = 0.3;
+      this._playerHand.push(card);
+      this.add.existing(card);
+      console.log("card added " + i.toString());
+    }
   }
 
   public update() {}
