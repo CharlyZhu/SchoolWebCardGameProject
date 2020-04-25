@@ -4,6 +4,7 @@ export class Card {
   public manaCost: number;
   public effects: {};
   public imageURL: string;
+  public cardGraphics: Phaser.GameObjects.Graphics;
 
   public constructor(JSONString: string) {
     let cardJSON = JSON.parse(JSONString);
@@ -17,19 +18,22 @@ export class Card {
     this.effects = cardJSON.effects;
 
     this.imageURL = cardJSON.imageURL;
-  }
 
+    //this.cardGraphics = new Phaser.GameObjects.Graphics()
+  }
 
   public toString(): string {
-    
-    return ("Name: " + this.name +
-    "\nUID: " + this.uid.toString() +
-    "\nMana Cost: " + this.manaCost.toString() +
-    "\nEffects: " + JSON.stringify(this.effects) +
-    "\nImage Url: " + this.imageURL
-    )
-
+    return (
+      "Name: " +
+      this.name +
+      "\nUID: " +
+      this.uid.toString() +
+      "\nMana Cost: " +
+      this.manaCost.toString() +
+      "\nEffects: " +
+      JSON.stringify(this.effects) +
+      "\nImage Url: " +
+      this.imageURL
+    );
   }
-
-
 }

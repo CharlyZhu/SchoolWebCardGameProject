@@ -1,20 +1,27 @@
 import "phaser";
 import { WebSocketServer } from "./network/WebSocketServer";
 import { Loader } from "./scenes/loader";
+import { MainScene } from "./scenes/MainScene";
 
 const initGame = () => {
   const config = {
     type: Phaser.AUTO,
-    width: 800,
+    width: 1200,
     height: 600,
-    backgroundColor: 0x0000ff
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
+    backgroundColor: 0x0000ff,
   };
 
   const game = new Phaser.Game(config);
 
   const loader = new Loader();
+  const main = new MainScene();
 
   game.scene.add("loader", loader, true);
+  game.scene.add("mainscene", main, true);
 
   // Webserver stuff:
   const server = new WebSocketServer();

@@ -14,5 +14,7 @@ export class Loader extends Phaser.Scene {
   public create() {
     const card: ICard = this.cache.json.get("card0001");
     console.log(card);
+    console.log("main loading");
+    this.scene.start("mainscene");
   }
 }
