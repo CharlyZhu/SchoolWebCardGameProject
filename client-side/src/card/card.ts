@@ -1,17 +1,16 @@
 import { MainScene } from "../scenes/MainScene";
 
 export default class Card extends Phaser.GameObjects.Image {
-  public isRevealed: boolean;
+  public isRevealed: boolean = true;
 
   public name: string;
   public uid: number;
   public manaCost: number;
   public effects: {};
   public imageURL: string;
-  public cardGraphics: Phaser.GameObjects.Graphics;
 
   public constructor(
-    //JSONString: string,
+    //JSONString: String,
     scene: Phaser.Scene,
     x: number,
     y: number,
@@ -22,6 +21,7 @@ export default class Card extends Phaser.GameObjects.Image {
     // let cardJSON = JSON.parse(JSONString);
 
     // this.name = cardJSON.name;
+    // console.log(this.name);
 
     // this.uid = cardJSON.uid;
 
@@ -30,8 +30,6 @@ export default class Card extends Phaser.GameObjects.Image {
     // this.effects = cardJSON.effects;
 
     // this.imageURL = cardJSON.imageURL;
-
-    //this.cardGraphics = new Phaser.GameObjects.Graphics()
 
     this.setInteractive();
     this.on("pointerdown", () => {
@@ -57,9 +55,16 @@ export default class Card extends Phaser.GameObjects.Image {
 
   public playCard(): void {
     this.alpha = 0;
+    this.isRevealed = false;
   }
 
   public cardClicked(): void {
     this.playCard();
+  }
+
+  public cardDrawn(): void {
+    this.alpha = 1;
+    this.isRevealed = true;
+    this.setInteractive();
   }
 }
