@@ -11,7 +11,7 @@ const cardJsonUrl = "//www.empiraft.com/resources/card_game/json/?file=cards";
 // Obtains the card list from online JSON files, storing card information in variable cardsList.
 //
 export async function obtainCardList(): Promise<void> {
-  return await new Promise((resolve, reject) => {
+  await new Promise((resolve, reject) => {
     readJSON(cardJsonUrl)
       .then((result) => {
         arrCardList = result.cards;
@@ -32,10 +32,9 @@ export interface ICard {
 }
 
 export class CardManager {
+  private readonly _gameScene: MainScene;
   public arrCard: Card[] = [];
-  private _gameScene: MainScene;
   private _arrPlayerHand: Card[] = [];
-  private http = require("http");
 
   public constructor(scene: MainScene) {
     this._gameScene = scene;

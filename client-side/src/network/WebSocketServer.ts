@@ -4,8 +4,8 @@ export class WebSocketServer {
     // Initializes websocket and applies a response handler.
     public async init(responseHandler: (response: string)=>void): Promise<void> {
         if (window.WebSocket) {
-            this._ws = new WebSocket("ws://54.37.66.227:8001");
-            //this.ws = new WebSocket("ws://localhost:8001");
+            //this._ws = new WebSocket("ws://54.37.66.227:8001");
+            this._ws = new WebSocket("ws://localhost:8001");
 
             await new Promise<void>((resolve, reject) => {
                 // Listener for when connection is made and the server is open.

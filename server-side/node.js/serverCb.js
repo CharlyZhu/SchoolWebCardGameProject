@@ -1,6 +1,21 @@
-heartbeatCb = (conn) => {
-    return setInterval(() => {
-        // Sends heart beat packet to client and checks if the client's last response time had been over time out time.
-        send(conn, { type: "heartBeat", timestamp: getCurrentTime()});
-    }, 1000);
+getRandomCardFromDeck = (conn) => {
+    if (getCardsLeft(conn) === 0)
+        return;
+    let cardID = 0;
+    do {
+        cardID = Math.floor(Math.random() * 6 + 1);
+    } while (conn.deck[cardID] === undefined || conn.deck[cardID] <= 0);
+    return cardID;
 };
+
+getCardsLeft = (conn) => {
+    let value = 0;
+    for (let i = 1; i <= 6; i++) {
+        value += conn.deck[i];
+    }
+    return value;
+};
+
+getCurrentTime = () => {
+    return new Date().getTime();
+}

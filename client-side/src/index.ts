@@ -25,7 +25,9 @@ const initGame = () => {
 
   // Webserver stuff:
   const server = new WebSocketServer();
-  server.init().then(() => {
+  server.init(()=>{
+    // Handles responds.
+  }).then(() => {
     server.sendToServer({ type: "log", message: "Rowan sends his regards" });
   });
 };

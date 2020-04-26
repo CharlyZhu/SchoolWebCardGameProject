@@ -5,6 +5,7 @@ import {server} from "./index";
 // Maximum amount of input history system should store.
 const maxInputHistory: number = 30;
 
+// Sets up stuff like enter for send message and console history log etc.
 export function setupInputControl() {
     // This contains the previous input histories.
     let inputHistoryList: Array<string> = Array();
