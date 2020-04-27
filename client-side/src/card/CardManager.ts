@@ -2,63 +2,56 @@ import { readJSON } from "../util";
 import { MainScene } from "../scenes/MainScene";
 import Card from "./Card";
 
-// This dictionary should contain all the card information there is in the whole game.
-// The key is the identifier, ie: the unique ID for the card.
-// The value should contain the information of the card itself.
-export let arrCardList: Array;
-// Defines important variables.
-const cardJsonUrl = "//www.empiraft.com/resources/card_game/json/?file=cards";
-// Obtains the card list from online JSON files, storing card information in variable cardsList.
-//
-export async function obtainCardList(): Promise<void> {
-  await new Promise((resolve, reject) => {
-    readJSON(cardJsonUrl)
-      .then((result) => {
-        arrCardList = result.cards;
-        resolve();
-      })
-      .catch((error) => {
-        reject(error);
-      });
-  });
-}
-
 export interface ICard {
-  name: string;
-  uid: string;
-  manaCost: number;
-  effects: {};
-  imageURL: string;
+    name: string;
+    uid: string;
+    manaCost: number;
+    effects: {};
+    imageURL: string;
 }
 
-export class CardManager {
-  private readonly _gameScene: MainScene;
-  public arrCard: Card[] = [];
-  private _arrPlayerHand: Card[] = [];
+// This class holds the information of all cards and basic functions for card manipulation.
+class CardManager {
+    // Important information.
+    private readonly CARD_INFO_JSON_URL = "//www.empiraft.com/resources/card_game/json/?file=cards";
+    private readonly CARD_IMG_BASE_URL = "//www.empiraft.com/resources/card_game/img/?file=";
 
-  public constructor(scene: MainScene) {
-    this._gameScene = scene;
-    for (let i = 0; i < 5; i++) {
-      const card = new Card(
-        //"card0002",
-        this._gameScene,
-        i * 100 + 400,
-        500,
-        "dummycard"
-      );
-      card.scale = 0.3;
-      this._arrPlayerHand.push(card);
-      this._gameScene.add.existing(card);
-      console.log("card added " + i.toString());
+    // This array should contain all the card information there is in the whole game.
+    private _arrCardList: Array;
+
+    // Obtains the card array length.
+    public getCardListLength(): number {
+        return this._arrCardList.length;
     }
-  }
-  public drawCard(): void {
-    let cardDrawn: boolean = false;
-    this._arrPlayerHand.forEach((element) => {
-      if (!element.isRevealed && !cardDrawn) {
-        element.cardDrawn();
-        cardDrawn = true;
-      }
-    });
-  }
+
+    // Obtains the image URL of a specific card from the array
+    public getCardImgURL(index: number): string {
+        if (index >= 0 && index < this.getCardListLength())
+            return this.CARD_IMG_BASE_URL + "000" + this._arrCardList[index].uid;
+        else
+            return "";
+    }
+
+    // Obtains the image URL of a specific card from the array
+    public getCardName(index: number): string {
+        if (index >= 0 && index < this.getCardListLength())
+            return this._arrCardList[index].name;
+        else
+            return "";
+    }
+
+    // Obtains the card information array from the internet.
+    public async obtainCardList(): Promise<void> {
+        await new Promise((resolve, reject) => {
+            readJSON(this.CARD_INFO_JSON_URL).then((result) => {
+                this._arrCardList = result.cards;
+                console.log(this._arrCardList, this.getCardListLength(), this.getCardImgURL(1));
+                resolve();
+            }).catch((error) => {
+                reject(error);
+            });
+        });
+    }
 }
+
+export const cardMgr: CardManager = new CardManager();

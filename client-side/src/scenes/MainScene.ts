@@ -1,13 +1,10 @@
-import { ICard, CardManager, arrCardList } from "../card/CardManager";
-import { GameObjects } from "phaser";
-import Card from "../card/Card";
 import GamePlayer from "../player/impl/GamePlayer";
+import {cardMgr} from "../card/CardManager";
+import {server} from "../index";
+
+export let gamePlayer: GamePlayer;
 
 export class MainScene extends Phaser.Scene {
-    private _cardManager: CardManager;
-    private _player: GamePlayer;
-    private _opponent: GamePlayer;
-
     constructor() {
         super("mainscene");
     }
@@ -17,19 +14,26 @@ export class MainScene extends Phaser.Scene {
         this.load.image("sqrorange", "assets/sprites/ui/square-orange.png");
         this.load.image("sqrblue", "assets/sprites/ui/square-blue.png");
         this.load.image("sqrgrey", "assets/sprites/ui/square-grey.png");
-
         this.load.image("dummycard", "assets/sprites/ui/dummy-card.png");
 
-        const loaderPrefix: string = "assets/cards/json/";
-        this.load.json("card0002", loaderPrefix + "000" + 2 + ".json");
-        this.load.json("card0003", loaderPrefix + "000" + 3 + ".json");
-        this.load.json("card0004", loaderPrefix + "000" + 4 + ".json");
-        this.load.json("card0005", loaderPrefix + "000" + 5 + ".json");
-        this.load.json("card0006", loaderPrefix + "000" + 6 + ".json");
+        // Loading card sprite images into the game.
+        this.loadCardSprites().then(()=>{
+            console.log("Card sprites successfully loaded.");
+        });
+    }
+
+    // Loads in sprite for cards from the internet using image URLs.
+    public async loadCardSprites(): Promise<void> {
+        await new Promise((resolve)=>{
+            for (let i = 0; i < cardMgr.getCardListLength(); i++)
+                this.load.image(cardMgr.getCardName(i), cardMgr.getCardImgURL(i));
+            resolve();
+        });
     }
 
     public create() {
-        console.log("main loaded");
+        gamePlayer = new GamePlayer(this, 100, 500, "sqrgrey");
+        this.add.existing(gamePlayer);
 
         const playerHand = this.add.image(600, 500, "sqrgreen");
         playerHand.scaleX = 2;
@@ -39,26 +43,16 @@ export class MainScene extends Phaser.Scene {
         deck.scaleY = 0.8;
         deck.setInteractive();
         deck.on("pointerdown", () => {
-            this._cardManager.drawCard();
+            server.sendDrawCardRequest();
         });
 
-        this._player = new GamePlayer(this, 100, 500, "sqrgrey");
-        this.add.existing(this._player);
-        this._opponent = new GamePlayer(this, 600, 100, "sqrblue");
-        this.add.existing(this._opponent);
+        this.input.on('gameobjectdown', function (pointer, gameObject) {
+            if (gameObject.indexInHand != null) {
+                server.sendDealCardRequest(gameObject.indexInHand);
+            }
+        });
 
-        // const playerStats = this.add.image(100, 500, "sqrgrey");
-        // deck.scaleX = 0.5;
-        // deck.scaleY = 0.8;
-
-        // const opponentZone = this.add.image(600, 100, "sqrblue");
-        // deck.scaleX = 0.5;
-        // deck.scaleY = 0.8;
-        console.log("UI added");
-
-        this._cardManager = new CardManager(this);
-
-        console.log(arrCardList);
+        server.sendToServer({type: "status", value: "QUEUEING"});
     }
 
     public update() {}

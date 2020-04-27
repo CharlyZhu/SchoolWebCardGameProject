@@ -31,110 +31,27 @@ class ConnManager {
         this.connections.push(conn);
         this.connInit(conn, this.connId++);
 
-        // Connection should all draw 3 test cards at the start of the game.
-        conn.drawCard(3);
-
         console.log("[INFO] New connection established with ID number [" + conn.id + "].");
-        conn.sendJson({
-            type: "info",
-            message: "Your assigned ID is [" + conn.id + "], there are currently " + this.connections.length + " online connection(s)."
-        });
-        this.broadcast({
-            type: "broadcast",
-            message: "New connection joined with ID number [" + conn.id + "].",
-            from: conn.nickname
-        });
+        conn.sendJson({type: "info", message: "Your assigned ID is [" + conn.id + "], there are currently " + this.connections.length + " online connection(s)."});
+        this.broadcast({type: "broadcast", message: "New connection joined with ID number [" + conn.id + "].", from: conn.nickname});
 
-        // Start heart beat checking.
-        conn.heartBeatInterval = (conn) => {
+        // Heart beat callback function.
+        conn.heartBeatIntervalCb = () => {
             return setInterval(() => {
                 // Sends heart beat packet to client and checks if the client's last response time had been over time out time.
                 conn.sendJson({ type: "heartBeat", timestamp: getCurrentTime()});
             }, 1000);
         };
+        conn.heartBeatIntervalId = conn.heartBeatIntervalCb();
 
         // Calls on msg receive.
-        conn.on('message', function (msg) {
-            // Input prep section. Decoding can be added in the future.
-            // Translate message to object.
-            let obj = JSON.parse(msg);
-            switch (obj.type) {
-                case "heartBeat":
-                    conn.lastHeartBeatTimeStamp = getCurrentTime();
-                    // Calculates ping and stores it in conn obj.
-                    conn.ping = getCurrentTime() - obj.timestamp;
-                    break;
-                case "obtain":
-                    switch (obj.target) {
-                        case "info":
-                            conn.sendJson(conn, {
-                                type: "obtainedInfo",
-                                ping: conn.ping,
-                                name: conn.nickname,
-                                status: conn.status
-                            });
-                            break;
-                        case "player":
-                            conn.sendJson(conn, {
-                                type: "player",
-                                health: conn.player.health,
-                                mana: conn.player.mana
-                            });
-                            break;
-                    }
-                    break;
-                case "log":
-                    console.log("[INFO] Message received: " + obj.message);
-                    break;
-                case "broadcast":
-                    console.log("[INFO] Broadcasting: " + obj.message);
-                    // Fun hacker stuff.
-                    if (obj.message === "I AM HACKER") {
-                        conn.iAmHacker = true;
-                        obj.message = "A HACKER HAS LOGGED IN!!!"
-                    }
-                    conn.lastAliveTimeStamp = getCurrentTime();
-                    // Broadcasts messages to clients.
-                    this.broadcast({type: "broadcast", message: obj.message, from: conn.nickname});
-                    break;
-                case "command":
-                    console.log("[INFO] Command received: " + obj.label);
-                    conn.lastAliveTimeStamp = getCurrentTime();
-                    this.handleCommand(conn, obj);
-                    break;
-                case "emoji":
-                    console.log("[INFO] Emoji received: " + obj.value);
-                    conn.lastAliveTimeStamp = getCurrentTime();
-                    this.broadcast({type: "emoji", value: obj.value, from: conn.nickname});
-                    break;
-                case "game":
-                    switch (obj.action) {
-                        case "play-card":
-                            conn.sendJson({type: "game", action: "remove", value: obj.value});
-                            console.log(conn.cards, obj.value, conn.cards[obj.value], cardList[conn.cards[obj.value] - 1]);
-                            this.broadcast({
-                                type: "img",
-                                message: "https://www.empiraft.com/resources/card_game/json/" + cardList[conn.cards[obj.value] - 1].imgUrl,
-                                from: conn.nickname
-                            });
-                            conn.cards.splice(obj.value, 1);
-                            break;
-                        case "end-turn":
-                            conn.drawCard(1);
-                            break;
-                    }
-                    break;
-                default:
-                    console.log("[INFO] Unknown typed text received: " + msg);
-                    break;
-            }
-        });
+        conn.on('message', (msg) => this.connOnMessageCb(conn, msg));
 
         // Calls on connection close.
         conn.on('close', () => {
             this.broadcast({type: "info", message: "Connection closed.", from: conn.nickname});
             console.log("[INFO] Connection [" + conn.id + "] closed.");
-            clearInterval(conn.heartBeatInterval);
+            clearInterval(conn.heartBeatIntervalId);
         });
 
         // Calls on error occur.
@@ -152,17 +69,28 @@ class ConnManager {
         conn.lastAliveTimeStamp = getCurrentTime();
         conn.lastHeartBeatTimeStamp = getCurrentTime();
         conn.iAmHacker = false;
-        conn.deck = Object.assign({}, cardMgr.cardDeck);
-        conn.cards = Array();
-
+        conn.arrCardDeck = Object.assign({}, cardMgr.cardDeck);
+        conn.arrCardsInHand = Array();
         // Initializes the draw card function.
-        conn.drawCard = (amount) => {
+        conn.drawCard = (amount = 1) => {
             for (let i = 0; i < amount; i++) {
                 let cardId = getRandomCardFromDeck(conn);
                 conn.sendJson({type: "game", action: "draw", value: cardId - 1});
-                conn.deck[cardId] -= 1;
-                conn.cards.push(cardId);
+                // Subtract the number of a specific type of card from the deck.
+                conn.arrCardDeck[cardId] -= 1;
+                conn.arrCardsInHand.push(cardId);
             }
+        };
+
+        // conn.useCard is called if we want that player to draw a card.
+        conn.useCard = (handIndex) => {
+            conn.sendJson({type: "game", action: "deal", value: handIndex});
+            conn.arrCardsInHand.splice(handIndex, 1);
+        };
+
+        // conn.showCardOnBoard is called to show a card on the desk.
+        conn.showCardOnBoard = (cardId) => {
+            conn.sendJson({type: "game", action: "showOnBoard", value: cardId});
         };
 
         // Initializes the send JSON function.
@@ -287,26 +215,126 @@ class ConnManager {
                 return conn.readyState !== undefined && conn.readyState !== 3;
             });
 
-            // Closes connections that are inactive or potentially offline.
-            this.connections.forEach((conn)=>{
-                if (getCurrentTime() - conn.lastAliveTimeStamp > serverConfig.timeout.inactivity) {
-                    if (conn.readyState === 1) {
-                        conn.sendJson({type: "info", message: "You have been kicked for inactivity."});
-                        conn.close("time out");
-                    }
-                    console.log("[INFO] Connection [" + conn.id + "] terminated due to inactivity.");
-                    return;
-                }
-                if (getCurrentTime() - conn.lastHeartBeatTimeStamp > serverConfig.timeout.heartbeat) {
-                    if (conn.readyState === 1) {
-                        conn.sendJson({type: "info", message: "You have been kicked for heartbeat timeout."});
-                        conn.close();
-                    }
-                    console.log("[INFO] Connection [" + conn.id + "] terminated due to heartbeat timeout.");
-                    return;
-                }
-            });
+            this.removeAFKPlayer();
+            this.matchQueueingPlayer();
         }, serverConfig.timeout.checkFrequency);
+    }
+
+    // Closes connections that are inactive or potentially offline.
+    removeAFKPlayer() {
+        this.connections.forEach((conn)=>{
+            if (getCurrentTime() - conn.lastAliveTimeStamp > serverConfig.timeout.inactivity) {
+                if (conn.readyState === 1) {
+                    conn.sendJson({type: "info", message: "You have been kicked for inactivity."});
+                    conn.close();
+                }
+                console.log("[INFO] Connection [" + conn.id + "] terminated due to inactivity.");
+                return;
+            }
+            if (getCurrentTime() - conn.lastHeartBeatTimeStamp > serverConfig.timeout.heartbeat) {
+                if (conn.readyState === 1) {
+                    conn.sendJson({type: "info", message: "You have been kicked for heartbeat timeout."});
+                    conn.close();
+                }
+                console.log("[INFO] Connection [" + conn.id + "] terminated due to heartbeat timeout.");
+                return;
+            }
+        });
+    }
+
+    // Matches the first connection with a random connection that is ready to enter game.
+    matchQueueingPlayer() {
+        let queueingConns = this.connections.filter((conn)=>{
+            return conn.status == "QUEUEING";
+        });
+        if (queueingConns.length < 2)
+            return;
+        let firstConn = queueingConns[0];
+        let secondConn = queueingConns[1 + Math.floor(Math.random() * (queueingConns.length - 1))];
+        firstConn.opponent = secondConn;
+        secondConn.opponent = firstConn;
+        firstConn.status = "IN-GAME";
+        secondConn.status = "IN-GAME";
+        firstConn.drawCard(3);
+        secondConn.drawCard(3);
+    }
+
+    connOnMessageCb(conn, msg) {
+        // Input prep section. Decoding can be added in the future.
+        // Translate message to object.
+        let obj = JSON.parse(msg);
+        switch (obj.type) {
+            case "heartBeat":
+                conn.lastHeartBeatTimeStamp = getCurrentTime();
+                // Calculates ping and stores it in conn obj.
+                conn.ping = getCurrentTime() - obj.timestamp;
+                break;
+            case "status":
+                conn.status = obj.value;
+                break;
+            case "obtain":
+                switch (obj.target) {
+                    case "info":
+                        conn.sendJson(conn, {
+                            type: "obtainedInfo",
+                            ping: conn.ping,
+                            name: conn.nickname,
+                            status: conn.status
+                        });
+                        break;
+                    case "player":
+                        conn.sendJson(conn, {
+                            type: "player",
+                            health: conn.player.health,
+                            mana: conn.player.mana
+                        });
+                        break;
+                }
+                break;
+            case "log":
+                console.log("[INFO] Message received: " + obj.message);
+                break;
+            case "broadcast":
+                console.log("[INFO] Broadcasting: " + obj.message);
+                // Fun hacker stuff.
+                if (obj.message === "I AM HACKER") {
+                    conn.iAmHacker = true;
+                    obj.message = "A HACKER HAS LOGGED IN!!!"
+                }
+                conn.lastAliveTimeStamp = getCurrentTime();
+                // Broadcasts messages to clients.
+                this.broadcast({type: "broadcast", message: obj.message, from: conn.nickname});
+                break;
+            case "command":
+                console.log("[INFO] Command received: " + obj.label);
+                conn.lastAliveTimeStamp = getCurrentTime();
+                conn.handleCommand(obj);
+                break;
+            case "emoji":
+                console.log("[INFO] Emoji received: " + obj.value);
+                conn.lastAliveTimeStamp = getCurrentTime();
+                this.broadcast({type: "emoji", value: obj.value, from: conn.nickname});
+                break;
+            case "game":
+                switch (obj.action) {
+                    case "deal":
+                        // When a player tries to use a card.
+                        if (obj.value < 0 || obj.value > conn.arrCardsInHand.length)
+                            break;
+                        let card = conn.arrCardsInHand[obj.value];
+                        conn.useCard(obj.value);
+                        conn.showCardOnBoard(card);
+                        conn.opponent.showCardOnBoard(card);
+                        break;
+                    case "draw":
+                        conn.drawCard();
+                        break;
+                }
+                break;
+            default:
+                console.log("[INFO] Unknown typed text received: " + msg);
+                break;
+        }
     }
 }
 

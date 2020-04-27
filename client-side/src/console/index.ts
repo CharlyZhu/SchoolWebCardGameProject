@@ -1,4 +1,4 @@
-import { WebSocketServer } from "../network/WebSocketServer";
+/*import { WebSocketServer } from "../network/WebSocketServer";
 import { setupEmojiBox } from "./emojiHandler";
 import { setupInputControl } from "./inputControl";
 import { ConsolePlayer } from "../player/impl/ConsolePlayer";
@@ -35,3 +35,4 @@ function serverSetupCb(server) {
     server.setTimerTask({type: "obtain", target: "info"}, 1000, ()=>setConnectionDetails("-", "-", "DISCONNECTED"));
     addLoadProgress(10);
 }
+*/

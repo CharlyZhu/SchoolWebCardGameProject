@@ -1,35 +1,43 @@
 import "phaser";
 import { WebSocketServer } from "./network/WebSocketServer";
-import { Loader } from "./scenes/loader";
+import { LoaderScene } from "./scenes/LoaderScene";
 import { MainScene } from "./scenes/MainScene";
+import { handleResponse } from "./network/responseHandler";
 
-const initGame = () => {
-  const config = {
+// Web server instance.
+export const server = new WebSocketServer();
+
+const gameConfig = {
     type: Phaser.AUTO,
     width: 1200,
     height: 600,
     scale: {
-      mode: Phaser.Scale.FIT,
-      autoCenter: Phaser.Scale.CENTER_BOTH,
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     backgroundColor: 0x0000ff,
-  };
+};
+// Creating the game instance.
+const game = new Phaser.Game(gameConfig);
 
-  const game = new Phaser.Game(config);
+// Creating the scene objects.
+const loader = new LoaderScene();
+const main = new MainScene();
 
-  const loader = new Loader();
-  const main = new MainScene();
+const initGame = () => {
+    game.scene.add("loader", loader, true);
+    game.scene.add("mainscene", main);
 
-  game.scene.add("loader", loader, true);
-  game.scene.add("mainscene", main);
-
-  // Webserver stuff:
-  const server = new WebSocketServer();
-  server.init(()=>{
-    // Handles responds.
-  }).then(() => {
-    server.sendToServer({ type: "log", message: "Rowan sends his regards" });
-  });
+    server.init((response) => handleResponse(response)).then(() => {
+        Object.defineProperty(server, "sendDealCardRequest", {value : (index: number)=>{
+                server.sendToServer({type: "game", action: "deal", value: index});
+            },
+            writable : false});
+        Object.defineProperty(server, "sendDrawCardRequest", {value : ()=>{
+               server.sendToServer({type: "game", action: "draw"});
+            },
+            writable : false});
+    });
 };
 
 initGame();
