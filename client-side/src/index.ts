@@ -3,7 +3,6 @@ import { WebSocketServer } from "./network/WebSocketServer";
 import { LoaderScene } from "./scenes/LoaderScene";
 import { MainScene } from "./scenes/MainScene";
 import { handleResponse } from "./network/responseHandler";
-import UIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
 
 // Web server instance.
 export const server = new WebSocketServer();
@@ -15,13 +14,6 @@ const gameConfig = {
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
-    },
-    plugins: {
-        scene: [{
-            key: 'rexUI',
-            plugin: UIPlugin,
-            mapping: 'rexUI'
-        }]
     },
     pixelArt: true,
     zoom: 4,
@@ -41,9 +33,7 @@ const initGame = () => {
     game.scene.add("mainscene", main);
 
     // Initialize the game after getting a response from server.
-    server.init((response) => handleResponse(response)).then(() => {
-
-    });
+    server.init((response) => handleResponse(response)).then(() => {});
 };
 
 initGame();
