@@ -3,6 +3,7 @@ import { WebSocketServer } from "./network/WebSocketServer";
 import { LoaderScene } from "./scenes/LoaderScene";
 import { MainScene } from "./scenes/MainScene";
 import { handleResponse } from "./network/responseHandler";
+import UIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
 
 // Web server instance.
 export const server = new WebSocketServer();
@@ -15,8 +16,18 @@ const gameConfig = {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
     },
+    plugins: {
+        scene: [{
+            key: 'rexUI',
+            plugin: UIPlugin,
+            mapping: 'rexUI'
+        }]
+    },
+    pixelArt: true,
+    zoom: 4,
     backgroundColor: 0x0000ff,
 };
+
 // Creating the game instance.
 const game = new Phaser.Game(gameConfig);
 
@@ -25,18 +36,13 @@ const loader = new LoaderScene();
 const main = new MainScene();
 
 const initGame = () => {
+    // Add scenes to the game.
     game.scene.add("loader", loader, true);
     game.scene.add("mainscene", main);
 
+    // Initialize the game after getting a response from server.
     server.init((response) => handleResponse(response)).then(() => {
-        Object.defineProperty(server, "sendDealCardRequest", {value : (index: number)=>{
-                server.sendToServer({type: "game", action: "deal", value: index});
-            },
-            writable : false});
-        Object.defineProperty(server, "sendDrawCardRequest", {value : ()=>{
-               server.sendToServer({type: "game", action: "draw"});
-            },
-            writable : false});
+
     });
 };
 

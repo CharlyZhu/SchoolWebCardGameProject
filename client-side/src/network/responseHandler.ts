@@ -11,6 +11,9 @@ export function handleResponse(response: string) {
             return;
         case "game":
             switch (jsonObj.action) {
+                case "message":
+                    gamePlayer.addMessage(jsonObj.value);
+                    break;
                 case "draw":
                     gamePlayer.addCardToHand(jsonObj.value);
                     break;
@@ -19,6 +22,15 @@ export function handleResponse(response: string) {
                     break;
                 case "showOnBoard":
                     gamePlayer.displayCardOnBoard(jsonObj.value);
+                    break;
+                case "health-info":
+                    gamePlayer.updateHealthTxt(jsonObj.value);
+                    break;
+                case "cards-left-info":
+                    gamePlayer.updateCardsLeft(jsonObj.value);
+                    break;
+                case "enemy-health-info":
+                    gamePlayer.updateEnemyHealth(jsonObj.value);
                     break;
             }
     }

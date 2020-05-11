@@ -1,9 +1,7 @@
-import { MainScene } from "../scenes/MainScene";
+import {server} from "../index";
 
 export default class Card extends Phaser.GameObjects.Image {
     public indexInHand: number;
-
-    public isRevealed: boolean = true;
 
     public name: string;
     public uid: number;
@@ -11,22 +9,19 @@ export default class Card extends Phaser.GameObjects.Image {
     public effects: {};
     public imageURL: string;
 
-    public constructor(scene: Phaser.Scene, x: number, y: number, textureID: string) {
+    public constructor(scene: Phaser.Scene, x: number, y: number, textureID: string, scale: number=3.5) {
         super(scene, x, y, textureID);
-        this.scale = 0.25;
-        // let cardJSON = JSON.parse(JSONString);
-        // this.name = cardJSON.name;
-        // console.log(this.name);
-        // this.uid = cardJSON.uid;
-        // this.manaCost = cardJSON.manaCost;
-        // this.effects = cardJSON.effects;
-        // this.imageURL = cardJSON.imageURL;
+        this.scale = scale;
 
-        this.setInteractive();
-        /*this.on("pointerdown", () => {
-            this.cardClicked();
-            this.setInteractive(false);
-        });*/
+        this.setInteractive().on('pointerdown', ()=>{
+            if (this.indexInHand != null) {
+                server.sendDealCardRequest(this.indexInHand);
+            }
+        }).on('pointerover', ()=>{
+            this.setTint(0xaaaaaa);
+        }).on('pointerout', ()=>{
+            this.setTint(0xffffff);
+        });
     }
 
     public toString(): string {
@@ -35,20 +30,5 @@ export default class Card extends Phaser.GameObjects.Image {
             "\nMana Cost: " + this.manaCost.toString() +
             "\nEffects: " + JSON.stringify(this.effects) +
             "\nImage Url: " + this.imageURL;
-    }
-
-    public playCard(): void {
-        this.alpha = 0;
-        this.isRevealed = false;
-    }
-
-    public cardClicked(): void {
-        this.playCard();
-    }
-
-    public cardDrawn(): void {
-        this.alpha = 1;
-        this.isRevealed = true;
-        this.setInteractive();
     }
 }

@@ -18,4 +18,4 @@ getCardsLeft = (conn) => {
 
 getCurrentTime = () => {
     return new Date().getTime();
-}
+};

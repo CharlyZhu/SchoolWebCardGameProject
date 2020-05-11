@@ -1,4 +1,6 @@
 require("./CardManager");
+require("./MessageHandler");
+require("./CommandHandler");
 
 serverConfig = {
     server: {
@@ -45,7 +47,7 @@ class ConnManager {
         conn.heartBeatIntervalId = conn.heartBeatIntervalCb();
 
         // Calls on msg receive.
-        conn.on('message', (msg) => this.connOnMessageCb(conn, msg));
+        conn.on('message', (msg) => connOnMessageCb(conn, msg));
 
         // Calls on connection close.
         conn.on('close', () => {
@@ -62,6 +64,8 @@ class ConnManager {
         });
     }
 
+    /* Initialize the connection
+    * Connection holds basic player information */
     connInit(conn, connId) {
         conn.id = connId;
         conn.status = "CONNECTED";
@@ -71,6 +75,50 @@ class ConnManager {
         conn.iAmHacker = false;
         conn.arrCardDeck = Object.assign({}, cardMgr.cardDeck);
         conn.arrCardsInHand = Array();
+
+        conn.health = 100;
+        conn.damage = 6;
+        conn.isTurn = false;
+
+        conn.displayMessage = (message = "Unspecified Message")=>{
+            conn.sendJson({type: "game", action: "message", value: message});
+        };
+
+        conn.setIsTurn = ()=>{
+            conn.opponent.isTurn = false;
+            conn.isTurn = true;
+            conn.displayMessage("It is your turn to act now!");
+
+            conn.sendTurnStatus();
+            conn.opponent.sendTurnStatus();
+
+            if (conn.arrCardsInHand.length < 5)
+                conn.drawCard();
+            else
+                conn.displayMessage("You did not draw a card as you cannot hold more than 5 cards.");
+        };
+
+        conn.updateInfo = (infoType, enemyConn = conn) => {
+            switch(infoType) {
+                case "health":
+                    conn.sendJson({type: "game", action: "health-info", value: conn.health});
+                    break;
+                case "cards-left":
+                    conn.sendJson({type: "game", action: "cards-left-info", value: getCardsLeft(conn)});
+                    break;
+                case "enemy-health":
+                    conn.sendJson({type: "game", action: "enemy-health-info", value: enemyConn.health});
+                    break;
+                case "enemy-cards-left-health":
+                    conn.sendJson({type: "game", action: "enemy-cards-left-info", value: enemyConn.arrCardDeck.length});
+                    break;
+            }
+        };
+
+        conn.sendTurnStatus = ()=>{
+            conn.sendJson({type: "game", action: "turn-status", value: conn.isTurn});
+        };
+
         // Initializes the draw card function.
         conn.drawCard = (amount = 1) => {
             for (let i = 0; i < amount; i++) {
@@ -80,6 +128,7 @@ class ConnManager {
                 conn.arrCardDeck[cardId] -= 1;
                 conn.arrCardsInHand.push(cardId);
             }
+            conn.updateInfo("cards-left");
         };
 
         // conn.useCard is called if we want that player to draw a card.
@@ -101,8 +150,8 @@ class ConnManager {
 
             // Check if string is valid.
             let strObj = JSON.stringify(jsonObj);
-            if (strObj.length > 100) {
-                console.log("String length too long.");
+            if (strObj.length > 500) {
+                console.log("[WARN] [ConnManager] String length too long.");
                 return;
             }
 
@@ -113,101 +162,10 @@ class ConnManager {
         };
 
         // Handles command JSON object for conn.
-        conn.handleCommand = (cmdJsonObj) => {
-            let cmdArgs = cmdJsonObj.args.split(' ');
-            let argsCount = cmdArgs.length;
-            if (cmdJsonObj.args === "")
-                argsCount = 0;
-            switch(cmdJsonObj.label) {
-                case "connections":
-                    if (argsCount === 0) {
-                        conn.sendJson({type: "info", message: "Command error, not supported argument."});
-                        break;
-                    }
-                    switch (cmdArgs[0]) {
-                        case "count":
-                            conn.sendJson({type: "info", message: "There are currently " + this.connections.length + " connection(s) online."});
-                            break;
-                        case "list":
-                            let output = "Connections: ";
-                            this.connections.forEach(conn => output += conn.id + " " );
-                            conn.sendJson({type: "info", message: output.trim()});
-                            break;
-                    }
-                    break;
-                case "ping":
-                    conn.sendJson({type: "ping", value: conn.ping});
-                    break;
-                case "status":
-                    if (argsCount === 0) {
-                        conn.sendJson({type: "info", message: "Your current status is: " + conn.status + "."});
-                        break;
-                    }
-                    switch (cmdArgs[0]) {
-                        case "list":
-                            conn.sendJson({type: "info", message: "Allowed status: CONNECTED, QUEUEING, IN-GAME, BANNED."});
-                            break;
-                        case "set":
-                            if (argsCount <= 1) {
-                                conn.sendJson({type: "info", message: "Command error, not supported argument."});
-                                break;
-                            }
-                            conn.status = cmdArgs[1];
-                            conn.sendJson({type: "info", message: "Your status changed to: " + conn.status + "."});
-                            break;
-                        case "reset":
-                            conn.status = "CONNECTED";
-                            conn.sendJson({type: "info", message: "Your status changed to: " + conn.status + "."});
-                            break;
-                    }
-                    break;
-                case "nick":
-                    if (argsCount === 0) {
-                        conn.sendJson({type: "info", message: "  - nick set [NAME]	:: Setting nick name for yourself."});
-                        conn.sendJson({type: "info", message: "  - nick check			:: Checking your current nickname."});
-                        conn.sendJson({type: "info", message: "  - nick reset			:: Setting nick name back to default."});
-                        break;
-                    }
-                    switch (cmdArgs[0]) {
-                        case "set":
-                            if (argsCount <= 1) {
-                                conn.sendJson({type: "info", message: "Command error, not supported argument."});
-                                break;
-                            }
-                            conn.nickname = cmdArgs[1];
-                            conn.sendJson({type: "info", message: "Your nickname has changed to: " + conn.nickname + "."});
-                            break;
-                        case "check":
-                            conn.sendJson({type: "info", message: "Your current nickname is: " + conn.nickname + "."});
-                            break;
-                        case "reset":
-                            conn.nickname = "ID-" + conn.id;
-                            conn.sendJson({type: "info", message: "Your nickname has changed to: " + conn.nickname + "."});
-                            break;
-                    }
-                    break;
-                case "img":
-                    if (argsCount === 0) {
-                        conn.sendJson({type: "info", message: "  - img [imgUrl] :: Sends image to others."});
-                        break;
-                    }
-                    this.broadcast({type: "img", message: cmdArgs[0],  from: conn.nickname});
-                    break;
-                case "link":
-                    if (argsCount === 0) {
-                        conn.sendJson({type: "info", message: "  - link [url] :: Sends URL to others."});
-                        break;
-                    }
-                    this.broadcast({type: "link", message: cmdArgs[0],  from: conn.nickname});
-                    break;
-                default:
-                    conn.sendJson({type: "info", message: "Command error, no such command."});
-                    break;
-            }
-        }
+        conn.handleCommand = connOnCmdCb;
     }
 
-    // Global interval thing that does some general stuff. TODO: MAKE COMMENT MORE SPECIFIC.
+    // A checker that runs at a certain interval, checking player status and maintaining gameplay.
     globalChecker() {
         setInterval(()=>{
             // Remove connections that has a ready state of CLOSED.
@@ -251,90 +209,19 @@ class ConnManager {
             return;
         let firstConn = queueingConns[0];
         let secondConn = queueingConns[1 + Math.floor(Math.random() * (queueingConns.length - 1))];
-        firstConn.opponent = secondConn;
-        secondConn.opponent = firstConn;
-        firstConn.status = "IN-GAME";
-        secondConn.status = "IN-GAME";
-        firstConn.drawCard(3);
-        secondConn.drawCard(3);
+        this.setupOpponent(firstConn, secondConn);
+        this.setupOpponent(secondConn, firstConn);
+        firstConn.setIsTurn();
     }
 
-    connOnMessageCb(conn, msg) {
-        // Input prep section. Decoding can be added in the future.
-        // Translate message to object.
-        let obj = JSON.parse(msg);
-        switch (obj.type) {
-            case "heartBeat":
-                conn.lastHeartBeatTimeStamp = getCurrentTime();
-                // Calculates ping and stores it in conn obj.
-                conn.ping = getCurrentTime() - obj.timestamp;
-                break;
-            case "status":
-                conn.status = obj.value;
-                break;
-            case "obtain":
-                switch (obj.target) {
-                    case "info":
-                        conn.sendJson(conn, {
-                            type: "obtainedInfo",
-                            ping: conn.ping,
-                            name: conn.nickname,
-                            status: conn.status
-                        });
-                        break;
-                    case "player":
-                        conn.sendJson(conn, {
-                            type: "player",
-                            health: conn.player.health,
-                            mana: conn.player.mana
-                        });
-                        break;
-                }
-                break;
-            case "log":
-                console.log("[INFO] Message received: " + obj.message);
-                break;
-            case "broadcast":
-                console.log("[INFO] Broadcasting: " + obj.message);
-                // Fun hacker stuff.
-                if (obj.message === "I AM HACKER") {
-                    conn.iAmHacker = true;
-                    obj.message = "A HACKER HAS LOGGED IN!!!"
-                }
-                conn.lastAliveTimeStamp = getCurrentTime();
-                // Broadcasts messages to clients.
-                this.broadcast({type: "broadcast", message: obj.message, from: conn.nickname});
-                break;
-            case "command":
-                console.log("[INFO] Command received: " + obj.label);
-                conn.lastAliveTimeStamp = getCurrentTime();
-                conn.handleCommand(obj);
-                break;
-            case "emoji":
-                console.log("[INFO] Emoji received: " + obj.value);
-                conn.lastAliveTimeStamp = getCurrentTime();
-                this.broadcast({type: "emoji", value: obj.value, from: conn.nickname});
-                break;
-            case "game":
-                switch (obj.action) {
-                    case "deal":
-                        // When a player tries to use a card.
-                        if (obj.value < 0 || obj.value > conn.arrCardsInHand.length)
-                            break;
-                        let card = conn.arrCardsInHand[obj.value];
-                        conn.useCard(obj.value);
-                        conn.showCardOnBoard(card);
-                        conn.opponent.showCardOnBoard(card);
-                        break;
-                    case "draw":
-                        conn.drawCard();
-                        break;
-                }
-                break;
-            default:
-                console.log("[INFO] Unknown typed text received: " + msg);
-                break;
-        }
+    setupOpponent(conn, opponentConn) {
+        conn.opponent = opponentConn;
+        conn.updateInfo("health");
+        conn.updateInfo("cards-left");
+        conn.updateInfo("enemy-health", opponentConn);
+        conn.displayMessage("Game starting.. You have been assigned to opponent [" + opponentConn.id + "], try not to cheat during the game.");
+        conn.drawCard(3);
+        conn.status = "IN-GAME";
     }
 }
 
