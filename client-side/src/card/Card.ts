@@ -9,6 +9,8 @@ export default class Card extends Phaser.GameObjects.Image {
     public effects: {};
     public imageURL: string;
 
+    private _disabled: boolean;
+
     public constructor(scene: Phaser.Scene, x: number, y: number, textureID: string, scale: number=3.5) {
         super(scene, x, y, textureID);
         this.scale = scale;
@@ -18,10 +20,20 @@ export default class Card extends Phaser.GameObjects.Image {
                 server.sendDealCardRequest(this.indexInHand);
             }
         }).on('pointerover', ()=>{
-            this.setTint(0xaaaaaa);
+            if (!this._disabled)
+                this.setTint(0xaaaaaa);
         }).on('pointerout', ()=>{
-            this.setTint(0xffffff);
+            if (!this._disabled)
+                this.setTint(0xffffff);
         });
+    }
+
+    public setDisabled(value: boolean): void {
+        this._disabled = value;
+        if (this._disabled)
+            this.setTint(0xaaaaaa);
+        else
+            this.setTint(0xffffff);
     }
 
     public toString(): string {

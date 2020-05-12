@@ -78,6 +78,7 @@ class ConnManager {
 
         conn.health = 100;
         conn.damage = 6;
+        conn.mana = 0;
         conn.isTurn = false;
 
         conn.displayMessage = (message = "Unspecified Message")=>{
@@ -85,32 +86,44 @@ class ConnManager {
         };
 
         conn.setIsTurn = ()=>{
-            conn.opponent.isTurn = false;
             conn.isTurn = true;
+            conn.opponent.isTurn = false;
             conn.displayMessage("It is your turn to act now!");
 
-            conn.sendTurnStatus();
-            conn.opponent.sendTurnStatus();
+            conn.mana += 3;
+            conn.updateInfo("mana");
+            conn.updateInfo("enemy-mana");
+            conn.opponent.updateInfo("mana");
+            conn.opponent.updateInfo("enemy-mana");
 
             if (conn.arrCardsInHand.length < 5)
                 conn.drawCard();
             else
                 conn.displayMessage("You did not draw a card as you cannot hold more than 5 cards.");
+
+            conn.sendTurnStatus();
+            conn.opponent.sendTurnStatus();
         };
 
-        conn.updateInfo = (infoType, enemyConn = conn) => {
+        conn.updateInfo = (infoType) => {
             switch(infoType) {
                 case "health":
-                    conn.sendJson({type: "game", action: "health-info", value: conn.health});
-                    break;
-                case "cards-left":
-                    conn.sendJson({type: "game", action: "cards-left-info", value: getCardsLeft(conn)});
+                    conn.sendJson({type: "game", action: "info", info_type: "health", is_enemy: false, value: conn.health});
                     break;
                 case "enemy-health":
-                    conn.sendJson({type: "game", action: "enemy-health-info", value: enemyConn.health});
+                    conn.sendJson({type: "game", action: "info", info_type: "health", is_enemy: true, value: conn.opponent.health});
                     break;
-                case "enemy-cards-left-health":
-                    conn.sendJson({type: "game", action: "enemy-cards-left-info", value: enemyConn.arrCardDeck.length});
+                case "cards-left":
+                    conn.sendJson({type: "game", action: "info", info_type: "cards-left", is_enemy: false, value: getCardsLeft(conn)});
+                    break;
+                case "enemy-cards-left":
+                    conn.sendJson({type: "game", action: "info", info_type: "cards-left", is_enemy: true, value: getCardsLeft(conn.opponent)});
+                    break;
+                case "mana":
+                    conn.sendJson({type: "game", action: "info", info_type: "mana", is_enemy: false, value: conn.mana});
+                    break;
+                case "enemy-mana":
+                    conn.sendJson({type: "game", action: "info", info_type: "mana", is_enemy: true, value: conn.opponent.mana});
                     break;
             }
         };
@@ -129,6 +142,9 @@ class ConnManager {
                 conn.arrCardsInHand.push(cardId);
             }
             conn.updateInfo("cards-left");
+            conn.updateInfo("enemy-cards-left");
+            conn.opponent.updateInfo("cards-left");
+            conn.opponent.updateInfo("enemy-cards-left");
         };
 
         // conn.useCard is called if we want that player to draw a card.
@@ -218,7 +234,10 @@ class ConnManager {
         conn.opponent = opponentConn;
         conn.updateInfo("health");
         conn.updateInfo("cards-left");
-        conn.updateInfo("enemy-health", opponentConn);
+        conn.updateInfo("mana");
+        conn.updateInfo("enemy-health");
+        conn.updateInfo("enemy-cards-left");
+        conn.updateInfo("enemy-mana");
         conn.displayMessage("Game starting.. You have been assigned to opponent [" + opponentConn.id + "], try not to cheat during the game.");
         conn.drawCard(3);
         conn.status = "IN-GAME";
