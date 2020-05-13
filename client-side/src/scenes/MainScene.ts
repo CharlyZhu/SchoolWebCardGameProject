@@ -28,6 +28,7 @@ export class MainScene extends Phaser.Scene {
         this.load.image("button-disabled", "assets/sprites/ui/button-disabled.png");
 
         this.load.spritesheet("knight-idle", "assets/sprites/characters/noBKG_KnightIdle_strip.png", {frameWidth: 64, frameHeight: 64});
+        this.load.spritesheet("knight-attack", "assets/sprites/characters/noBKG_KnightAttack_strip.png", {frameWidth: 144, frameHeight: 64});
 
         // Loading card sprite images into the game.
         this.loadCardSprites().then(()=>{
@@ -52,8 +53,8 @@ export class MainScene extends Phaser.Scene {
 
         let messageBoxComponent = new MessageBox(this, 50, 350, "text-holder");
         let cardHolderComponent = new CardHolder(this, 20, 580, "card-holder");
-        let characterComponent = new Character(this, 770, 210, "knight-idle", "knight-idle-anim");
-        let enemyCharacterComponent = new Character(this, 1120, 180, "knight-idle", "knight-idle-anim", 3, true, 7);
+        let characterComponent = new Character(this, 770, 210, "knight-idle");
+        let enemyCharacterComponent = new Character(this, 1120, 180, "knight-idle", 3, true, 7);
         let endTurnButton = new Button(this, 1100, 550, "END TURN",
             "button-normal",
             "button-disabled",
@@ -82,6 +83,15 @@ export class MainScene extends Phaser.Scene {
             }),
             frameRate: 15,
             repeat: -1
+        });
+        this.anims.create({
+            key: "knight-attack-anim",
+            frames: this.anims.generateFrameNumbers("knight-attack", {
+                start: 0,
+                end: 22
+            }),
+            frameRate: 20,
+            repeat: 0
         });
     }
 

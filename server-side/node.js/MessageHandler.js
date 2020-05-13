@@ -5,11 +5,11 @@ connOnMessageCb = (conn, msg)=>{
 
     let isActionLegal = ()=>{
         if (!conn.opponent) {
-            conn.displayMessage("Action denied, you are not in a game yet...");
+            conn.displayMessage("Action denied, you are not in a game yet...", '#800000');
             return false;
         }
         if (!conn.isTurn) {
-            conn.displayMessage("Action denied, it is not your turn yet...");
+            conn.displayMessage("Action denied, it is not your turn yet...", '#800000');
             return false;
         }
         return true;
@@ -86,12 +86,17 @@ connOnMessageCb = (conn, msg)=>{
                     let card = conn.arrCardsInHand[obj.value];
 
                     // TODO: Card logic goes here.
+                    conn.sendJson({type: "game", action: "damage", is_enemy: false});
+                    conn.opponent.sendJson({type: "game", action: "damage", is_enemy: true});
 
                     conn.useCard(obj.value);
                     conn.showCardOnBoard(card);
                     conn.opponent.showCardOnBoard(card);
                     break;
                 case "draw":
+                    /* This functionality should not be open for common users. */
+                    if (!conn.iAmHacker)
+                        return;
                     if (!isActionLegal())
                         break;
                     if (conn.arrCardsInHand.length < 5){

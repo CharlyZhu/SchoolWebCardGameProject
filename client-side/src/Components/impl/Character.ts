@@ -13,7 +13,7 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
     public readonly CARD_DEAL_POS_X;
     public readonly CARD_DEAL_POS_Y;
 
-    public constructor(scene: MainScene, x: number, y: number, characterSprite: string, characterAnimation: string, scale: number = 5, reversed: boolean = false, startFrame: number = 0) {
+    public constructor(scene: MainScene, x: number, y: number, characterSprite: string, scale: number = 5, reversed: boolean = false, startFrame: number = 0) {
         super(scene, x, y, characterSprite);
         this.setOrigin(.5, .5);
         this.scale = scale;
@@ -24,20 +24,44 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         this.CARD_DEAL_POS_X = x + (reversed ? -150 : 150);
         this.CARD_DEAL_POS_Y = y + 20;
 
-        //this.play(characterAnimation, true, startFrame);
-
         // Rendering out character information.
         this._txtHealth = new Message(this.scene, x - 30, y - scale * 20 - 30, "HEALTH", 13);
         this._txtCardsLeft = new Message(this.scene, x - 30, y - scale * 20 - 20, "CARDS_LEFT", 13);
         this._txtMana = new Message(this.scene, x - 30, y - scale * 20 - 10, "MANA", 13);
     }
 
-    public playAnimation(characterAnimation: string) {
+    public playAnimation(characterAnimation: string, onCompleteCb=()=>{}) {
         this.play(characterAnimation, true);
+        this.once("animationcomplete", onCompleteCb);
+    }
+
+    public animateDamage() {
+        let times = 0;
+        let id = setInterval(()=>{
+            if (times % 2 === 0)
+                this.setAlpha(.5);
+            else
+                this.setAlpha(1);
+            if (++times === 20)
+                clearInterval(id);
+        }, 50);
+    }
+
+    public animateWeaponUpgrade() {
+        let times = 0;
+        let id = setInterval(()=>{
+            if (times % 2 === 0)
+                this.setTint(0xff3333);
+            else
+                this.setTint(0xffffff);
+            if (++times === 6)
+                clearInterval(id);
+        }, 300);
     }
 
     public stopAnimation() {
-        this.anims.pause(this.anims.currentAnim.frames[0]);
+        if (this.anims.currentAnim)
+            this.anims.pause(this.anims.currentAnim.frames[0]);
     }
 
     public displayCard(index: number) {

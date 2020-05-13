@@ -1,5 +1,6 @@
 import {server} from "../index";
 import {gameManager} from "../scenes/MainScene";
+import Character from "../Components/impl/Character";
 
 export function handleResponse(response: string) {
     let jsonObj = JSON.parse(response);
@@ -12,7 +13,21 @@ export function handleResponse(response: string) {
         case "game":
             switch (jsonObj.action) {
                 case "message":
-                    gameManager.getGameObject("MessageBox").addMessage(jsonObj.value);
+                    gameManager.getGameObject("MessageBox").addMessage(jsonObj.value, jsonObj.color, jsonObj.bold);
+                    break;
+                case "damage":
+                    let player: Character = <Character>gameManager.getGameObject("Character");
+                    let enemy: Character = <Character>gameManager.getGameObject("EnemyCharacter");
+                    if (jsonObj.is_enemy)
+                        enemy.playAnimation("knight-attack-anim", ()=>{
+                            enemy.playAnimation("knight-idle-anim");
+                            player.animateDamage();
+                        });
+                    else
+                        player.playAnimation("knight-attack-anim", ()=>{
+                            player.playAnimation("knight-idle-anim");
+                            enemy.animateDamage();
+                        });
                     break;
                 case "draw":
                     gameManager.getGameObject("CardHolder").addCardToHand(jsonObj.value);
@@ -55,6 +70,7 @@ export function handleResponse(response: string) {
                         gameManager.getGameObject("EnemyCharacter").stopAnimation();
                     }
                     else{
+                        gameManager.getGameObject("MessageBox").addMessage("Your enemy's turn has started.");
                         gameManager.getGameObject("CardHolder").disableAllCards();
                         gameManager.getGameObject("EndTurnButton").setDisabled(true);
                         gameManager.getGameObject("EndTurnButton").setText("TURN ENDED");
