@@ -1,3 +1,4 @@
+
 getRandomCardFromDeck = (conn) => {
     if (getCardsLeft(conn) === 0)
         return;

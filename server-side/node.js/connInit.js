@@ -1,31 +1,44 @@
-/* Initialize the connection
- * Connection holds basic player information
- */
+// Initialize the connection to hold basic player information
 connInit = (conn, connId)=>{
+    // Connection id will increase when a new one joins in.
     conn.id = connId;
+    // Connection status can be CONNECTED, QUEUEING, IN-GAME, END-GAME
     conn.status = "CONNECTED";
+    // Nick name can be obtained by player login info in the future.
     conn.nickname = "ID-" + conn.id;
-    conn.lastAliveTimeStamp = getCurrentTime();
-    conn.lastHeartBeatTimeStamp = getCurrentTime();
+    // Set up time stamp for heartbeat functionality.
+    conn.lastAliveTimeStamp = conn.lastHeartBeatTimeStamp = getCurrentTime();
+    // Obtains the deck that the player will be playing.
     conn.arrCardDeck = Object.assign({}, cardMgr.cardDeck);
+    // Assigns the cards in player hand to be an empty array.
     conn.arrCardsInHand = Array();
+    // Basic player game info setup.
     conn.health = 100;
     conn.damage = 6;
     conn.mana = 0;
     conn.isTurn = false;
 
-    /* This value is solely an ester egg and can be removed */
-    conn.iAmHacker = false;
+    // Heart beat callback function.
+    conn.heartBeatIntervalCb = () => {
+        return setInterval(() => {
+            // Sends heart beat packet to client and checks if the client's last response time had been over time out time.
+            conn.sendJson({ type: "heartBeat", timestamp: getCurrentTime()});
+        }, 1000);
+    };
+    conn.heartBeatIntervalId = conn.heartBeatIntervalCb();
 
+    // Sends client an message which will be displayed at the message bar.
     conn.displayMessage = (message, color='black', bold=false)=>{
         conn.sendJson({type: "game", action: "message", value: message, color: color, bold: bold});
     };
 
+    // Sets that it is one player's turn. This will also set that player's opponent to end their turn.
     conn.setIsTurn = ()=>{
         conn.isTurn = true;
         conn.opponent.isTurn = false;
-        conn.displayMessage("It is your turn to act now!", '#062903', true);
+        conn.displayMessage("It is your turn to act now!", '#062903', true); // TODO: This could be moved to client side?
 
+        // TODO: Maybe this should be set to some sort of add mana function.
         conn.mana += 3;
         conn.updateInfo("mana");
         conn.updateInfo("enemy-mana");
@@ -35,25 +48,28 @@ connInit = (conn, connId)=>{
         if (conn.arrCardsInHand.length < 5)
             conn.drawCard();
         else
-            conn.displayMessage("You did not draw a card as you cannot hold more than 5 cards.", '#FF9E00');
+            conn.displayMessage("You did not draw a card as you cannot hold more than 5 cards.", '#FF9E00'); // TODO: This could be moved to client side?
 
         conn.sendTurnStatus();
         conn.opponent.sendTurnStatus();
     };
 
+    // Gets that if the player is still online.
     conn.isOnline = ()=>{
         return conn.readyState !== undefined && conn.readyState !== 3;
     };
 
+    // Set if player has won the game.
     conn.setWin = (value)=>{
         if (value)
-            conn.displayMessage("You have won the game.", '#123456', true);
+            conn.displayMessage("You have won the game.", '#123456', true); // TODO: This could be moved to client side?
         else
-            conn.displayMessage("You have lost the game.", '#654321', true);
+            conn.displayMessage("You have lost the game.", '#654321', true); // TODO: This could be moved to client side?
         conn.sendJson({type: "game", action: "game-end", value: value});
         conn.status = "GAME-ENDED";
     };
 
+    // Sends player game information.
     conn.updateInfo = (infoType) => {
         switch(infoType) {
             case "health":
@@ -77,11 +93,12 @@ connInit = (conn, connId)=>{
         }
     };
 
+    // Tells player if it is their turn.
     conn.sendTurnStatus = ()=>{
         conn.sendJson({type: "game", action: "turn-status", value: conn.isTurn});
     };
 
-    // Initializes the draw card function.
+    // Draws certain amount of cards for player.
     conn.drawCard = (amount = 1) => {
         for (let i = 0; i < amount; i++) {
             let cardId = getRandomCardFromDeck(conn);
@@ -96,36 +113,24 @@ connInit = (conn, connId)=>{
         conn.opponent.updateInfo("enemy-cards-left");
     };
 
-    // conn.useCard is called if we want that player to draw a card.
+    // Called when player issues request to play a certain card from their hand.
     conn.useCard = (handIndex) => {
         conn.sendJson({type: "game", action: "deal", value: handIndex});
         conn.arrCardsInHand.splice(handIndex, 1);
     };
 
-    // conn.showCardOnBoard is called to show a card on the desk.
-    conn.showCardOnBoard = (cardId) => {
-        conn.sendJson({type: "game", action: "showOnBoard", value: cardId});
+    // To show that one player has played a card on the board.
+    conn.showCardOnBoard = (cardId, isEnemy=false) => {
+        conn.sendJson({type: "game", action: "showOnBoard", value: cardId, is_enemy: isEnemy});
     };
 
-    // Initializes the send JSON function.
+    // Base function for ending json object to client.
     conn.sendJson = (jsonObj) => {
         // Checks if connections is open, send if it is.
-        if (conn.readyState !== 1)
-            return;
-
-        // Check if string is valid.
+        if (!conn.isOnline()) return;
+        // Stringify json object.
         let strObj = JSON.stringify(jsonObj);
-        if (strObj.length > 500) {
-            console.log("[WARN] [ConnManager] String length too long.");
-            return;
-        }
-
-        if (conn.iAmHacker === true)
-            conn.send(strObj);
-        else
-            conn.send(strObj.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+        // Filters string to avoid HTML injection.
+        conn.send(strObj.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
     };
-
-    // Handles command JSON object for conn.
-    conn.handleCommand = connOnCmdCb;
 };

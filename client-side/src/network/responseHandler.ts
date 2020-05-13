@@ -36,8 +36,10 @@ export function handleResponse(response: string) {
                     gameManager.getGameObject("CardHolder").removeCardFromHand(jsonObj.value);
                     break;
                 case "showOnBoard":
-                    gameManager.getGameObject("Character").displayCard(jsonObj.value);
-                    gameManager.getGameObject("EnemyCharacter").displayCard(jsonObj.value);
+                    if (!jsonObj.is_enemy)
+                        gameManager.getGameObject("Character").displayCard(jsonObj.value);
+                    else
+                        gameManager.getGameObject("EnemyCharacter").displayCard(jsonObj.value);
                     break;
                 case "info":
                     switch (jsonObj.info_type) {

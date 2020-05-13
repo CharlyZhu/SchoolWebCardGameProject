@@ -1,8 +1,10 @@
 require("./CardManager");
-require("./MessageHandler");
-require("./CommandHandler");
+require("./connOnMessageCb");
+require("./connOnCommandCb");
+require("./connOnCloseCb");
 require("./connInit");
 
+// Server configuration, can be put to a file in the future.
 serverConfig = {
     server: {
         ip: "",
@@ -15,6 +17,7 @@ serverConfig = {
     }
 };
 
+// This class holds all definition of connections in the game.
 class ConnManager {
     constructor() {
         this.connections = Array();
@@ -30,41 +33,21 @@ class ConnManager {
 
     // Call back function when a new connection is made with the server.
     connCb(conn) {
-        // Assign an unique ID for the new connection then store it within the connection.
+        // Push the new connection to the array.
         this.connections.push(conn);
+        // Assign an unique ID for the new connection and initialize it.
         connInit(conn, this.connId++);
-
         console.log("[INFO] New connection established with ID number [" + conn.id + "].");
-        conn.sendJson({type: "info", message: "Your assigned ID is [" + conn.id + "], there are currently " + this.connections.length + " online connection(s)."});
-        this.broadcast({type: "broadcast", message: "New connection joined with ID number [" + conn.id + "].", from: conn.nickname});
 
-        // Heart beat callback function.
-        conn.heartBeatIntervalCb = () => {
-            return setInterval(() => {
-                // Sends heart beat packet to client and checks if the client's last response time had been over time out time.
-                conn.sendJson({ type: "heartBeat", timestamp: getCurrentTime()});
-            }, 1000);
-        };
-        conn.heartBeatIntervalId = conn.heartBeatIntervalCb();
-
-        // Calls on msg receive.
-        conn.on('message', (msg) => connOnMessageCb(conn, msg));
-
-        // Calls on connection close.
-        conn.on('close', () => {
-            this.broadcast({type: "info", message: "Connection closed.", from: conn.nickname});
-            console.log("[INFO] Connection [" + conn.id + "] closed.");
-            clearInterval(conn.heartBeatIntervalId);
-        });
-
-        // Calls on error occur.
+        // Sets up listeners.
+        conn.on('message', (msg)=>connOnMessageCb(conn, msg));
+        conn.on('close', ()=>connOnCloseCb(conn));
         conn.on('error', (e) => {
             console.log("[ERROR] Connection [" + conn.id + "] produced error:");
             console.log(e);
             conn.close();
         });
     }
-
 
     // A checker that runs at a certain interval, checking player status and maintaining gameplay.
     globalChecker() {
@@ -147,4 +130,5 @@ class ConnManager {
     }
 }
 
+// The connMgr object, used in server.js.
 connMgr = new ConnManager();

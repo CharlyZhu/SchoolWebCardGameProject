@@ -30,7 +30,8 @@ ws = new ws.Server({
 	}
 });
 
-console.log("[INFO] Successfully created web socket, listening at " + serverConfig.server.port + ".");
+// When a connection is established, call the connection callback function.
 ws.on("connection", (conn)=>connMgr.connCb(conn));
-
+// Run the global checker, this will be run continually checking all the connections and modify them when necessary.
 connMgr.globalChecker();
+console.log("[INFO] Successfully created web socket, listening at " + serverConfig.server.port + ".");

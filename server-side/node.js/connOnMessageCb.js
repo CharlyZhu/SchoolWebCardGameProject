@@ -3,7 +3,8 @@ connOnMessageCb = (conn, msg)=>{
     // Translate message to object.
     let obj = JSON.parse(msg);
 
-    let isActionLegal = ()=>{
+    // TODO: Move to connInit.
+    function isActionLegal() {
         if (!conn.opponent) {
             conn.displayMessage("Action denied, you are not in a game yet...", '#800000');
             return false;
@@ -13,7 +14,7 @@ connOnMessageCb = (conn, msg)=>{
             return false;
         }
         return true;
-    };
+    }
 
     switch (obj.type) {
         case "heartBeat":
@@ -23,25 +24,6 @@ connOnMessageCb = (conn, msg)=>{
             break;
         case "status":
             conn.status = obj.value;
-            break;
-        case "obtain":
-            switch (obj.target) {
-                case "info":
-                    conn.sendJson(conn, {
-                        type: "obtainedInfo",
-                        ping: conn.ping,
-                        name: conn.nickname,
-                        status: conn.status
-                    });
-                    break;
-                case "player":
-                    conn.sendJson(conn, {
-                        type: "player",
-                        health: conn.player.health,
-                        mana: conn.player.mana
-                    });
-                    break;
-            }
             break;
         case "log":
             console.log("[INFO] Message received: " + obj.message);
@@ -60,7 +42,7 @@ connOnMessageCb = (conn, msg)=>{
         case "command":
             console.log("[INFO] Command received: " + obj.label);
             conn.lastAliveTimeStamp = getCurrentTime();
-            conn.handleCommand(conn, obj);
+            connOnCmdCb(conn, obj);
             break;
         case "emoji":
             console.log("[INFO] Emoji received: " + obj.value);
@@ -68,6 +50,7 @@ connOnMessageCb = (conn, msg)=>{
             this.broadcast({type: "emoji", value: obj.value, from: conn.nickname});
             break;
         case "game":
+            conn.lastAliveTimeStamp = getCurrentTime();
             switch (obj.action) {
                 case "client-ready":
                     conn.displayMessage("You have connected to the server, your assigned ID is [" + conn.id + "], finding you a game, please wait...");
@@ -86,12 +69,12 @@ connOnMessageCb = (conn, msg)=>{
                     let card = conn.arrCardsInHand[obj.value];
 
                     // TODO: Card logic goes here.
-                    conn.sendJson({type: "game", action: "damage", is_enemy: false});
-                    conn.opponent.sendJson({type: "game", action: "damage", is_enemy: true});
+                    conn.sendJson({type: "game", action: "damage", is_enemy: false}); // TODO: Move to elsewhere.
+                    conn.opponent.sendJson({type: "game", action: "damage", is_enemy: true}); // TODO: Move to elsewhere.
 
                     conn.useCard(obj.value);
                     conn.showCardOnBoard(card);
-                    conn.opponent.showCardOnBoard(card);
+                    conn.opponent.showCardOnBoard(card, true);
                     break;
                 case "draw":
                     /* This functionality should not be open for common users. */
