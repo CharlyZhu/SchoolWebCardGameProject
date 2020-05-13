@@ -22,7 +22,7 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
             this.scaleX = -this.scaleX;
 
         this.CARD_DEAL_POS_X = x;
-        this.CARD_DEAL_POS_Y = (y - 170) + (5 - this.scale) * 10;
+        this.CARD_DEAL_POS_Y = y - scale * 20 - 60;
 
         // Rendering out character information.
         this._txtHealth = new Message(this.scene, x - 30, y - scale * 20 - 30, "HEALTH", 13);

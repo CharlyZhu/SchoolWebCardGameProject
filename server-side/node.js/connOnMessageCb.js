@@ -66,15 +66,32 @@ connOnMessageCb = (conn, msg)=>{
                     // When a player tries to use a card.
                     if (obj.value < 0 || obj.value > conn.arrCardsInHand.length)
                         break;
-                    let card = conn.arrCardsInHand[obj.value];
+
+                    let cardUid = conn.arrCardsInHand[obj.value];
+                    // TODO: Card index is wrong, needs fixing.
+                    let cardData = cardMgr.getCardData(cardUid - 1);
+                    if (!cardData)
+                        break;
 
                     // TODO: Card logic goes here.
+                    let cardCost = cardData.cost;
+                    console.log(cardCost);
+                    if (conn.mana < cardCost) {
+                        conn.displayMessage("You do not have enough mana.")
+                        break;
+                    }
+
+                    // TODO: Make method.
+                    conn.mana -= cardCost;
+                    conn.updateInfo("mana");
+                    conn.opponent.updateInfo("enemy-mana");
+
                     conn.sendJson({type: "game", action: "damage", is_enemy: false}); // TODO: Move to elsewhere.
                     conn.opponent.sendJson({type: "game", action: "damage", is_enemy: true}); // TODO: Move to elsewhere.
 
                     conn.useCard(obj.value);
-                    conn.showCardOnBoard(card);
-                    conn.opponent.showCardOnBoard(card, true);
+                    conn.showCardOnBoard(cardUid);
+                    conn.opponent.showCardOnBoard(cardUid, true);
                     break;
                 case "draw":
                     /* This functionality should not be open for common users. */
