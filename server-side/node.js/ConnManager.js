@@ -1,7 +1,10 @@
 require("./CardManager");
-require("./MessageHandler");
-require("./CommandHandler");
+require("./connOnMessageCb");
+require("./connOnCommandCb");
+require("./connOnCloseCb");
+require("./connInit");
 
+// Server configuration, can be put to a file in the future.
 serverConfig = {
     server: {
         ip: "",
@@ -14,6 +17,7 @@ serverConfig = {
     }
 };
 
+// This class holds all definition of connections in the game.
 class ConnManager {
     constructor() {
         this.connections = Array();
@@ -29,140 +33,20 @@ class ConnManager {
 
     // Call back function when a new connection is made with the server.
     connCb(conn) {
-        // Assign an unique ID for the new connection then store it within the connection.
+        // Push the new connection to the array.
         this.connections.push(conn);
-        this.connInit(conn, this.connId++);
-
+        // Assign an unique ID for the new connection and initialize it.
+        connInit(conn, this.connId++);
         console.log("[INFO] New connection established with ID number [" + conn.id + "].");
-        conn.sendJson({type: "info", message: "Your assigned ID is [" + conn.id + "], there are currently " + this.connections.length + " online connection(s)."});
-        this.broadcast({type: "broadcast", message: "New connection joined with ID number [" + conn.id + "].", from: conn.nickname});
 
-        // Heart beat callback function.
-        conn.heartBeatIntervalCb = () => {
-            return setInterval(() => {
-                // Sends heart beat packet to client and checks if the client's last response time had been over time out time.
-                conn.sendJson({ type: "heartBeat", timestamp: getCurrentTime()});
-            }, 1000);
-        };
-        conn.heartBeatIntervalId = conn.heartBeatIntervalCb();
-
-        // Calls on msg receive.
-        conn.on('message', (msg) => connOnMessageCb(conn, msg));
-
-        // Calls on connection close.
-        conn.on('close', () => {
-            this.broadcast({type: "info", message: "Connection closed.", from: conn.nickname});
-            console.log("[INFO] Connection [" + conn.id + "] closed.");
-            clearInterval(conn.heartBeatIntervalId);
-        });
-
-        // Calls on error occur.
+        // Sets up listeners.
+        conn.on('message', (msg)=>connOnMessageCb(conn, msg));
+        conn.on('close', ()=>connOnCloseCb(conn));
         conn.on('error', (e) => {
             console.log("[ERROR] Connection [" + conn.id + "] produced error:");
             console.log(e);
             conn.close();
         });
-    }
-
-    /* Initialize the connection
-    * Connection holds basic player information */
-    connInit(conn, connId) {
-        conn.id = connId;
-        conn.status = "CONNECTED";
-        conn.nickname = "ID-" + conn.id;
-        conn.lastAliveTimeStamp = getCurrentTime();
-        conn.lastHeartBeatTimeStamp = getCurrentTime();
-        conn.iAmHacker = false;
-        conn.arrCardDeck = Object.assign({}, cardMgr.cardDeck);
-        conn.arrCardsInHand = Array();
-
-        conn.health = 100;
-        conn.damage = 6;
-        conn.isTurn = false;
-
-        conn.displayMessage = (message = "Unspecified Message")=>{
-            conn.sendJson({type: "game", action: "message", value: message});
-        };
-
-        conn.setIsTurn = ()=>{
-            conn.opponent.isTurn = false;
-            conn.isTurn = true;
-            conn.displayMessage("It is your turn to act now!");
-
-            conn.sendTurnStatus();
-            conn.opponent.sendTurnStatus();
-
-            if (conn.arrCardsInHand.length < 5)
-                conn.drawCard();
-            else
-                conn.displayMessage("You did not draw a card as you cannot hold more than 5 cards.");
-        };
-
-        conn.updateInfo = (infoType, enemyConn = conn) => {
-            switch(infoType) {
-                case "health":
-                    conn.sendJson({type: "game", action: "health-info", value: conn.health});
-                    break;
-                case "cards-left":
-                    conn.sendJson({type: "game", action: "cards-left-info", value: getCardsLeft(conn)});
-                    break;
-                case "enemy-health":
-                    conn.sendJson({type: "game", action: "enemy-health-info", value: enemyConn.health});
-                    break;
-                case "enemy-cards-left-health":
-                    conn.sendJson({type: "game", action: "enemy-cards-left-info", value: enemyConn.arrCardDeck.length});
-                    break;
-            }
-        };
-
-        conn.sendTurnStatus = ()=>{
-            conn.sendJson({type: "game", action: "turn-status", value: conn.isTurn});
-        };
-
-        // Initializes the draw card function.
-        conn.drawCard = (amount = 1) => {
-            for (let i = 0; i < amount; i++) {
-                let cardId = getRandomCardFromDeck(conn);
-                conn.sendJson({type: "game", action: "draw", value: cardId - 1});
-                // Subtract the number of a specific type of card from the deck.
-                conn.arrCardDeck[cardId] -= 1;
-                conn.arrCardsInHand.push(cardId);
-            }
-            conn.updateInfo("cards-left");
-        };
-
-        // conn.useCard is called if we want that player to draw a card.
-        conn.useCard = (handIndex) => {
-            conn.sendJson({type: "game", action: "deal", value: handIndex});
-            conn.arrCardsInHand.splice(handIndex, 1);
-        };
-
-        // conn.showCardOnBoard is called to show a card on the desk.
-        conn.showCardOnBoard = (cardId) => {
-            conn.sendJson({type: "game", action: "showOnBoard", value: cardId});
-        };
-
-        // Initializes the send JSON function.
-        conn.sendJson = (jsonObj) => {
-            // Checks if connections is open, send if it is.
-            if (conn.readyState !== 1)
-                return;
-
-            // Check if string is valid.
-            let strObj = JSON.stringify(jsonObj);
-            if (strObj.length > 500) {
-                console.log("[WARN] [ConnManager] String length too long.");
-                return;
-            }
-
-            if (conn.iAmHacker === true)
-                conn.send(strObj);
-            else
-                conn.send(strObj.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
-        };
-
-        // Handles command JSON object for conn.
-        conn.handleCommand = connOnCmdCb;
     }
 
     // A checker that runs at a certain interval, checking player status and maintaining gameplay.
@@ -175,6 +59,7 @@ class ConnManager {
 
             this.removeAFKPlayer();
             this.matchQueueingPlayer();
+            this.checkWinningPlayer();
         }, serverConfig.timeout.checkFrequency);
     }
 
@@ -214,15 +99,36 @@ class ConnManager {
         firstConn.setIsTurn();
     }
 
+    checkWinningPlayer() {
+        let inGameConns = this.connections.filter((conn)=>{
+            return conn.status == "IN-GAME";
+        });
+        inGameConns.forEach(conn=>{
+            if (!conn.opponent.isOnline()){
+                conn.displayMessage("Your opponent has left the game.", '#123456', true);
+                conn.setWin(true);
+            }
+
+            if (conn.health <= 0) {
+                conn.setWin(false);
+                conn.opponent.setWin(true);
+            }
+        });
+    }
+
     setupOpponent(conn, opponentConn) {
         conn.opponent = opponentConn;
         conn.updateInfo("health");
         conn.updateInfo("cards-left");
-        conn.updateInfo("enemy-health", opponentConn);
+        conn.updateInfo("mana");
+        conn.updateInfo("enemy-health");
+        conn.updateInfo("enemy-cards-left");
+        conn.updateInfo("enemy-mana");
         conn.displayMessage("Game starting.. You have been assigned to opponent [" + opponentConn.id + "], try not to cheat during the game.");
         conn.drawCard(3);
         conn.status = "IN-GAME";
     }
 }
 
+// The connMgr object, used in server.js.
 connMgr = new ConnManager();

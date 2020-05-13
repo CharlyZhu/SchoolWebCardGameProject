@@ -11,6 +11,16 @@ class CardManager {
         });
     }
 
+    getCardData(cardUid) {
+        let cardData = undefined;
+        this.cardList.forEach((card)=>{
+            if (cardUid === card.uid) {
+                cardData = card;
+            }
+        });
+        return cardData;
+    }
+
     async readString(host, path) {
         return await new Promise((resolve, reject)=>{
             let request = http.request({host: host, path: path}, function (response) {

@@ -1,8 +1,12 @@
-import GamePlayer from "../player/impl/GamePlayer";
+import GameManager from "../game/GameManager";
 import {cardMgr} from "../card/CardManager";
 import {server} from "../index";
+import MessageBox from "../Components/impl/MessageBox";
+import CardHolder from "../Components/impl/CardHolder";
+import Character from "../Components/impl/Character";
+import Button from "../Components/impl/Button";
 
-export let gamePlayer: GamePlayer;
+export let gameManager: GameManager;
 
 export class MainScene extends Phaser.Scene {
     constructor() {
@@ -18,8 +22,13 @@ export class MainScene extends Phaser.Scene {
 
         this.load.image("background", "assets/sprites/ui/background.png");
         this.load.image("card-holder", "assets/sprites/ui/card-holder.png");
+        this.load.image("text-holder", "assets/sprites/ui/text-holder.png");
+        this.load.image("button-normal", "assets/sprites/ui/button-normal.png");
+        this.load.image("button-highlighted", "assets/sprites/ui/button-highlighted.png");
+        this.load.image("button-disabled", "assets/sprites/ui/button-disabled.png");
 
         this.load.spritesheet("knight-idle", "assets/sprites/characters/noBKG_KnightIdle_strip.png", {frameWidth: 64, frameHeight: 64});
+        this.load.spritesheet("knight-attack", "assets/sprites/characters/noBKG_KnightAttack_strip.png", {frameWidth: 144, frameHeight: 64});
 
         // Loading card sprite images into the game.
         this.loadCardSprites().then(()=>{
@@ -42,42 +51,26 @@ export class MainScene extends Phaser.Scene {
         const background = this.add.image(600, 300, "background");
         background.scale *= 3.5;
 
-        const cardHolder = this.add.image(500, 450, "card-holder");
-        cardHolder.scale *= 4;
+        let messageBoxComponent = new MessageBox(this, 50, 350, "text-holder");
+        let cardHolderComponent = new CardHolder(this, 20, 580, "card-holder");
+        let characterComponent = new Character(this, 770, 210, "knight-idle");
+        let enemyCharacterComponent = new Character(this, 1120, 180, "knight-idle", 3, true, 7);
+        let endTurnButton = new Button(this, 1100, 550, "END TURN",
+            "button-normal",
+            "button-disabled",
+            "button-highlighted",
+            ()=>server.sendEndTurnRequest()
+        );
 
-        gamePlayer = new GamePlayer(this, 700, 200);
-        this.add.existing(gamePlayer);
+        gameManager = new GameManager(this, 700, 200);
+        gameManager.addGameObject("MessageBox", messageBoxComponent);
+        gameManager.addGameObject("CardHolder", cardHolderComponent);
+        gameManager.addGameObject("Character", characterComponent);
+        gameManager.addGameObject("EnemyCharacter", enemyCharacterComponent);
+        gameManager.addGameObject("EndTurnButton", endTurnButton);
 
+        // TODO: Make this one request.
         server.notifyClientReady();
-
-        const deck = this.add.image(1100, 450, "sqrorange");
-        deck.scaleX = 0.5;
-        deck.scaleY = 0.8;
-        deck.setInteractive();
-        deck.on("pointerdown", () => {
-            //server.sendDrawCardRequest();
-            server.sendEndTurnRequest();
-        });
-
-        /*this.input.on('gameobjectdown', function (pointer, gameObject) {
-            // To make sure that it is card that we are handling.
-            if (gameObject.indexInHand != null) {
-                server.sendDealCardRequest(gameObject.indexInHand);
-            }
-        });
-        this.input.on('pointerover',function(pointer, gameObject){
-            // To make sure that it is card that we are handling.
-            if (gameObject.indexInHand != null) {
-                gameObject.scale *= 1.5;
-            }
-        });
-        this.input.on('pointerout',function(pointer, gameObject){
-            // To make sure that it is card that we are handling.
-            if (gameObject.indexInHand != null) {
-                gameObject.scale /= 1.5;
-            }
-        });*/
-
         server.sendToServer({type: "status", value: "QUEUEING"});
     }
 
@@ -90,6 +83,15 @@ export class MainScene extends Phaser.Scene {
             }),
             frameRate: 15,
             repeat: -1
+        });
+        this.anims.create({
+            key: "knight-attack-anim",
+            frames: this.anims.generateFrameNumbers("knight-attack", {
+                start: 0,
+                end: 22
+            }),
+            frameRate: 20,
+            repeat: 0
         });
     }
 
