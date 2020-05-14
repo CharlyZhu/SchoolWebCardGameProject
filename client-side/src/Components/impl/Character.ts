@@ -13,7 +13,7 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
     public readonly CARD_DEAL_POS_X;
     public readonly CARD_DEAL_POS_Y;
 
-    public constructor(scene: MainScene, x: number, y: number, characterSprite: string, scale: number = 5, reversed: boolean = false, startFrame: number = 0) {
+    public constructor(scene: MainScene, x: number, y: number, characterSprite: string, scale: number = 5, reversed: boolean = false) {
         super(scene, x, y, characterSprite);
         this.setOrigin(.5, .5);
         this.scale = scale;
