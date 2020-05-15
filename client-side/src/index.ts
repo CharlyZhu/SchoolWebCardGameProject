@@ -33,9 +33,7 @@ const initGame = () => {
     game.scene.add("mainscene", main);
 
     // Initialize the game after getting a response from server.
-    server.init((response) => handleResponse(response)).then(() => {
-
-    });
+    server.init((response) => handleResponse(response)).then(() => {});
 };
 
 initGame();
