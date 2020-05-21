@@ -17,6 +17,7 @@ connInit = (conn, connId)=>{
     conn.damage = 6;
     conn.mana = 0;
     conn.isTurn = false;
+    conn.turnTime = 60;
 
     // Heart beat callback function.
     conn.heartBeatIntervalCb = () => {
@@ -35,6 +36,7 @@ connInit = (conn, connId)=>{
     // Sets that it is one player's turn. This will also set that player's opponent to end their turn.
     conn.setIsTurn = ()=>{
         conn.isTurn = true;
+        conn.turnTime = 60;
         conn.opponent.isTurn = false;
         conn.displayMessage("It is your turn to act now!", '#062903', true); // TODO: This could be moved to client side?
 

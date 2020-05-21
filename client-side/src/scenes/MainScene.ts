@@ -7,6 +7,7 @@ import Character from "../gameobjects/impl/Character";
 import Button from "../gameobjects/impl/Button";
 import PlayerStats from "../gameobjects/impl/PlayerStats";
 import Notice from "../gameobjects/impl/Notice";
+import TimeMeter from "../gameobjects/impl/TimeMeter";
 
 export let gameManager: GameManager;
 
@@ -29,6 +30,9 @@ export class MainScene extends Phaser.Scene {
         this.load.image("icon-3", "assets/sprites/ui/icon-3.png");
         this.load.image("icon-4", "assets/sprites/ui/icon-4.png");
 
+        this.load.image("time-meter", "assets/sprites/ui/time-meter.png");
+        this.load.image("time-meter-fill", "assets/sprites/ui/time-meter-fill.png");
+
         this.load.spritesheet("knight-idle", "assets/sprites/characters/noBKG_KnightIdle_strip.png", {frameWidth: 64, frameHeight: 64});
         this.load.spritesheet("knight-attack", "assets/sprites/characters/noBKG_KnightAttack_strip.png", {frameWidth: 144, frameHeight: 64});
 
@@ -50,11 +54,7 @@ export class MainScene extends Phaser.Scene {
     public create() {
         this.prepareAnimations();
         this.renderGameObjects();
-
-        // TODO: Make this a game object and make disappear on game start.
-        //this.add.sprite(500, 440, "queue-notice").setScale(5, 5);
-
-        // TODO: Make this one request.
+        // Tells server that client is ready and can be queued in a game.
         server.notifyClientReady();
     }
 
@@ -63,7 +63,7 @@ export class MainScene extends Phaser.Scene {
         background.scale *= 3.5;
 
         let queueNotice = new Notice(this, 500, 440, "queue-notice");
-        let messageBoxComponent = new MessageBox(this, 50, 350, "text-holder");
+        let messageBoxComponent = new MessageBox(this, 80, 350, "text-holder");
         let cardHolderComponent = new CardHolder(this, 20, 580, "card-holder");
         let characterComponent = new Character(this, 770, 210, "knight-idle");
         let enemyCharacterComponent = new Character(this, 1120, 180, "knight-idle", 3, true);
@@ -83,6 +83,8 @@ export class MainScene extends Phaser.Scene {
         let enemyArmourStats = new PlayerStats(this, 1000, 440, "icon-3", "Armour-Placeholder");
         let enemyWeaponStatus = new PlayerStats(this, 1000, 460, "icon-4", "Weapon-Placeholder");
 
+        let timeMeter = new TimeMeter(this, 40, 290, "time-meter", "time-meter-fill", 60);
+
         gameManager = new GameManager(this);
         gameManager.addGameObject("MessageBox", messageBoxComponent);
         gameManager.addGameObject("CardHolder", cardHolderComponent);
@@ -100,6 +102,9 @@ export class MainScene extends Phaser.Scene {
         gameManager.addGameObject("enemyManaStatus", enemyManaStatus);
         gameManager.addGameObject("enemyArmourStats", enemyArmourStats);
         gameManager.addGameObject("enemyWeaponStatus", enemyWeaponStatus);
+
+        gameManager.addGameObject("TimeMeter", timeMeter);
+        timeMeter.startCountdown();
     }
 
     public prepareAnimations() {

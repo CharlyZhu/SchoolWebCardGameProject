@@ -11,7 +11,7 @@ serverConfig = {
         port: 8001
     },
     timeout: {
-        checkFrequency: 5000,
+        checkFrequency: 1000,
         heartbeat: 3000,
         inactivity: 20 * 60 * 1000
     }
@@ -60,6 +60,7 @@ class ConnManager {
             this.removeAFKPlayer();
             this.matchQueueingPlayer();
             this.checkWinningPlayer();
+            this.checkOvertimeTurn();
         }, serverConfig.timeout.checkFrequency);
     }
 
@@ -82,6 +83,16 @@ class ConnManager {
                 console.log("[INFO] Connection [" + conn.id + "] terminated due to heartbeat timeout.");
                 return;
             }
+        });
+    }
+
+    checkOvertimeTurn() {
+        this.connections.forEach((conn)=>{
+            if (conn.isTurn && conn.turnTime <= 0)
+                conn.opponent.setIsTurn();
+
+            if (conn.isTurn)
+                conn.turnTime--;
         });
     }
 

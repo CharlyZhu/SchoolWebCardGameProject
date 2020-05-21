@@ -13,6 +13,7 @@ export function handleResponse(response: string) {
         case "game":
             switch (jsonObj.action) {
                 case "confirm-ready":
+                    //gameManager.getGameObject("Character").animateWeaponUpgrade();
                     //gameManager.getGameObject("QueueNotice").destroy();
                     break;
                 case "confirm-game":
@@ -76,6 +77,7 @@ export function handleResponse(response: string) {
                         gameManager.getGameObject("EndTurnButton").setText("END TURN");
                         gameManager.getGameObject("Character").playAnimation("knight-idle-anim");
                         gameManager.getGameObject("EnemyCharacter").stopAnimation();
+                        gameManager.getGameObject("TimeMeter").resetCountdown();
                     }
                     else{
                         gameManager.getGameObject("MessageBox").addMessage("Your enemy's turn has started.");
@@ -84,6 +86,7 @@ export function handleResponse(response: string) {
                         gameManager.getGameObject("EndTurnButton").setText("TURN ENDED");
                         gameManager.getGameObject("EnemyCharacter").playAnimation("knight-idle-anim");
                         gameManager.getGameObject("Character").stopAnimation();
+                        gameManager.getGameObject("TimeMeter").pauseCountdown();
                     }
                     break;
             }
