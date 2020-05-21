@@ -85,6 +85,8 @@ export class MainScene extends Phaser.Scene {
 
         let timeMeter = new TimeMeter(this, 40, 290, "time-meter", "time-meter-fill", 60);
 
+        let xxx = new Button(this, 0, 0, );
+
         gameManager = new GameManager(this);
         gameManager.addGameObject("MessageBox", messageBoxComponent);
         gameManager.addGameObject("CardHolder", cardHolderComponent);
@@ -104,7 +106,6 @@ export class MainScene extends Phaser.Scene {
         gameManager.addGameObject("enemyWeaponStatus", enemyWeaponStatus);
 
         gameManager.addGameObject("TimeMeter", timeMeter);
-        timeMeter.startCountdown();
     }
 
     public prepareAnimations() {

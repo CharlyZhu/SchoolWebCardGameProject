@@ -1,6 +1,4 @@
 import { readJSON } from "../util";
-import { MainScene } from "../scenes/MainScene";
-import Card from "./Card";
 
 export interface ICard {
     name: string;
@@ -45,7 +43,6 @@ class CardManager {
         await new Promise((resolve, reject) => {
             readJSON(this.CARD_INFO_JSON_URL).then((result) => {
                 this._arrCardList = result.cards;
-                console.log(this._arrCardList, this.getCardListLength(), this.getCardImgURL(1));
                 resolve();
             }).catch((error) => {
                 reject(error);

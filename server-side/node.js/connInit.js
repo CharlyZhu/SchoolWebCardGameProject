@@ -40,12 +40,7 @@ connInit = (conn, connId)=>{
         conn.opponent.isTurn = false;
         conn.displayMessage("It is your turn to act now!", '#062903', true); // TODO: This could be moved to client side?
 
-        // TODO: Maybe this should be set to some sort of add mana function.
-        conn.mana += 3;
-        conn.updateInfo("mana");
-        conn.updateInfo("enemy-mana");
-        conn.opponent.updateInfo("mana");
-        conn.opponent.updateInfo("enemy-mana");
+        conn.addMana(3);
 
         if (conn.arrCardsInHand.length < 5)
             conn.drawCard();
@@ -54,6 +49,12 @@ connInit = (conn, connId)=>{
 
         conn.sendTurnStatus();
         conn.opponent.sendTurnStatus();
+    };
+
+    conn.addMana = (value) => {
+        conn.mana += value;
+        conn.updateInfo("mana");
+        conn.opponent.updateInfo("enemy-mana");
     };
 
     // Gets that if the player is still online.

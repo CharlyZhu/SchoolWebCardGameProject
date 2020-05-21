@@ -70,14 +70,13 @@ connOnMessageCb = (conn, msg)=>{
                         break;
 
                     let cardUid = conn.arrCardsInHand[obj.value];
-                    // TODO: Card index is wrong, needs fixing.
-                    let cardData = cardMgr.getCardData(cardUid - 1);
+                    let cardData = cardMgr.getCardData(cardUid);
                     if (!cardData)
                         break;
 
                     // TODO: Card logic goes here.
                     let cardCost = cardData.cost;
-                    console.log(cardCost);
+                    console.log(cardUid);
                     if (conn.mana < cardCost) {
                         conn.displayMessage("You do not have enough mana.")
                         break;

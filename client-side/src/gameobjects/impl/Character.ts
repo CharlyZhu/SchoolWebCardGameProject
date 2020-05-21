@@ -66,10 +66,10 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
 
     public displayCard(index: number) {
         if (this._cardDisplay) {
-            this._cardDisplay.setTexture(cardMgr.getCardName(index - 1));
+            this._cardDisplay.setTexture(cardMgr.getCardName(index));
             return;
         }
-        this._cardDisplay = new Card(this.scene, this.CARD_DEAL_POS_X, this.CARD_DEAL_POS_Y, cardMgr.getCardName(index - 1), 2);
+        this._cardDisplay = new Card(this.scene, this.CARD_DEAL_POS_X, this.CARD_DEAL_POS_Y, cardMgr.getCardName(index), 2);
         this._cardDisplay.scale = 1;
         this.scene.add.existing(this._cardDisplay);
     }
