@@ -1,6 +1,6 @@
 import {server} from "../index";
 import {gameManager} from "../scenes/MainScene";
-import Character from "../Components/impl/Character";
+import Character from "../gameobjects/impl/Character";
 
 export function handleResponse(response: string) {
     let jsonObj = JSON.parse(response);
@@ -12,6 +12,12 @@ export function handleResponse(response: string) {
             return;
         case "game":
             switch (jsonObj.action) {
+                case "confirm-ready":
+                    //gameManager.getGameObject("QueueNotice").destroy();
+                    break;
+                case "confirm-game":
+                    gameManager.getGameObject("QueueNotice").destroy();
+                    break;
                 case "message":
                     gameManager.getGameObject("MessageBox").addMessage(jsonObj.value, jsonObj.color, jsonObj.bold);
                     break;

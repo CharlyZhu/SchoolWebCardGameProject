@@ -1,8 +1,8 @@
 import "phaser";
 import { WebSocketServer } from "./network/WebSocketServer";
+import { MenuScene } from "./scenes/MenuScene";
 import { LoaderScene } from "./scenes/LoaderScene";
 import { MainScene } from "./scenes/MainScene";
-import { handleResponse } from "./network/responseHandler";
 
 // Web server instance.
 export const server = new WebSocketServer();
@@ -17,23 +17,13 @@ const gameConfig = {
     },
     pixelArt: true,
     zoom: 4,
-    backgroundColor: 0x0000ff,
+    backgroundColor: 0x334455,
 };
 
 // Creating the game instance.
 const game = new Phaser.Game(gameConfig);
 
-// Creating the scene objects.
-const loader = new LoaderScene();
-const main = new MainScene();
-
-const initGame = () => {
-    // Add scenes to the game.
-    game.scene.add("loader", loader, true);
-    game.scene.add("mainscene", main);
-
-    // Initialize the game after getting a response from server.
-    server.init((response) => handleResponse(response)).then(() => {});
-};
-
-initGame();
+// Add scenes to the game.
+game.scene.add("menu", new MenuScene(), true);
+game.scene.add("loader", new LoaderScene());
+game.scene.add("mainscene", new MainScene());

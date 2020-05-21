@@ -1,11 +1,12 @@
 import GameManager from "../game/GameManager";
 import {cardMgr} from "../card/CardManager";
 import {server} from "../index";
-import MessageBox from "../Components/impl/MessageBox";
-import CardHolder from "../Components/impl/CardHolder";
-import Character from "../Components/impl/Character";
-import Button from "../Components/impl/Button";
-import PlayerStats from "../Components/impl/PlayerStats";
+import MessageBox from "../gameobjects/impl/MessageBox";
+import CardHolder from "../gameobjects/impl/CardHolder";
+import Character from "../gameobjects/impl/Character";
+import Button from "../gameobjects/impl/Button";
+import PlayerStats from "../gameobjects/impl/PlayerStats";
+import Notice from "../gameobjects/impl/Notice";
 
 export let gameManager: GameManager;
 
@@ -15,18 +16,13 @@ export class MainScene extends Phaser.Scene {
     }
 
     public preload() {
-        this.load.image("sqrgreen", "assets/sprites/ui/square-green.png");
-        this.load.image("sqrorange", "assets/sprites/ui/square-orange.png");
-        this.load.image("sqrblue", "assets/sprites/ui/square-blue.png");
-        this.load.image("sqrgrey", "assets/sprites/ui/square-grey.png");
-        this.load.image("dummycard", "assets/sprites/ui/dummy-card.png");
-
         this.load.image("background", "assets/sprites/ui/background.png");
+        this.load.image("queue-notice", "assets/sprites/ui/queue-notice.png");
         this.load.image("card-holder", "assets/sprites/ui/card-holder.png");
         this.load.image("text-holder", "assets/sprites/ui/text-holder.png");
-        this.load.image("button-normal", "assets/sprites/ui/button-normal.png");
-        this.load.image("button-highlighted", "assets/sprites/ui/button-highlighted.png");
-        this.load.image("button-disabled", "assets/sprites/ui/button-disabled.png");
+        this.load.image("button-normal", "assets/sprites/ui/button-normal1.png");
+        this.load.image("button-highlighted", "assets/sprites/ui/button-normal2.png");
+        this.load.image("button-disabled", "assets/sprites/ui/button-normal3.png");
 
         this.load.image("icon-1", "assets/sprites/ui/icon-1.png");
         this.load.image("icon-2", "assets/sprites/ui/icon-2.png");
@@ -53,10 +49,20 @@ export class MainScene extends Phaser.Scene {
 
     public create() {
         this.prepareAnimations();
+        this.renderGameObjects();
 
+        // TODO: Make this a game object and make disappear on game start.
+        //this.add.sprite(500, 440, "queue-notice").setScale(5, 5);
+
+        // TODO: Make this one request.
+        server.notifyClientReady();
+    }
+
+    public renderGameObjects() {
         const background = this.add.image(600, 300, "background");
         background.scale *= 3.5;
 
+        let queueNotice = new Notice(this, 500, 440, "queue-notice");
         let messageBoxComponent = new MessageBox(this, 50, 350, "text-holder");
         let cardHolderComponent = new CardHolder(this, 20, 580, "card-holder");
         let characterComponent = new Character(this, 770, 210, "knight-idle");
@@ -77,12 +83,13 @@ export class MainScene extends Phaser.Scene {
         let enemyArmourStats = new PlayerStats(this, 1000, 440, "icon-3", "Armour-Placeholder");
         let enemyWeaponStatus = new PlayerStats(this, 1000, 460, "icon-4", "Weapon-Placeholder");
 
-        gameManager = new GameManager(this, 700, 200);
+        gameManager = new GameManager(this);
         gameManager.addGameObject("MessageBox", messageBoxComponent);
         gameManager.addGameObject("CardHolder", cardHolderComponent);
         gameManager.addGameObject("Character", characterComponent);
         gameManager.addGameObject("EnemyCharacter", enemyCharacterComponent);
         gameManager.addGameObject("EndTurnButton", endTurnButton);
+        gameManager.addGameObject("QueueNotice", queueNotice);
 
         gameManager.addGameObject("healthStats", healthStats);
         gameManager.addGameObject("manaStatus", manaStatus);
@@ -93,10 +100,6 @@ export class MainScene extends Phaser.Scene {
         gameManager.addGameObject("enemyManaStatus", enemyManaStatus);
         gameManager.addGameObject("enemyArmourStats", enemyArmourStats);
         gameManager.addGameObject("enemyWeaponStatus", enemyWeaponStatus);
-
-        // TODO: Make this one request.
-        server.notifyClientReady();
-        server.sendToServer({type: "status", value: "QUEUEING"});
     }
 
     public prepareAnimations() {

@@ -125,6 +125,7 @@ class ConnManager {
         conn.updateInfo("enemy-cards-left");
         conn.updateInfo("enemy-mana");
         conn.displayMessage("Game starting.. You have been assigned to opponent [" + opponentConn.id + "], try not to cheat during the game.");
+        conn.sendJson({type: "game", action: "confirm-game"});
         conn.drawCard(3);
         conn.status = "IN-GAME";
     }

@@ -54,6 +54,8 @@ connOnMessageCb = (conn, msg)=>{
             switch (obj.action) {
                 case "client-ready":
                     conn.displayMessage("You have connected to the server, your assigned ID is [" + conn.id + "], finding you a game, please wait...");
+                    conn.status = "QUEUEING";
+                    conn.sendJson({type: "game", action: "confirm-ready"});
                     break;
                 case "end-turn":
                     if (!isActionLegal())

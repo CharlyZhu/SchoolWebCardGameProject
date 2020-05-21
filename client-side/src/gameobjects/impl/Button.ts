@@ -14,7 +14,7 @@ export default class Button extends Phaser.GameObjects.Image implements IGameObj
         this._arrTexture.push(buttonHighlightedTexture);
         this._arrTexture.push(buttonDisabledTexture);
 
-        this._txtText = new Message(scene, x, y, text, 15, true, 'Georgia', '#3b1d1b', 100, false);
+        this._txtText = new Message(scene, x, y, text, 15, true, 'Georgia', '#3b1d1b', 200, false);
         this._txtText.setOrigin(.5, .5);
 
         this.setInteractive().on('pointerdown', ()=>{
