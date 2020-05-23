@@ -1,4 +1,4 @@
-import {IGameObject} from "../gameobjects/IGameObject";
+import { IGameObject } from "../gameobjects/IGameObject";
 
 /*
  * Display layer of the game, contains methods that will update the display of the game.
@@ -19,11 +19,12 @@ export default class GameManager {
         gameObject.onEnable();
     }
 
+    //doesn't work
     public removeGameObject(name: string) {
-        if (this._gameObjects.has(name))
-            this._gameObjects.delete(name);
+        if (this._gameObjects.has(name)) this._gameObjects.delete(name);
     }
 
+    //
     public getGameObject(componentName: string): IGameObject {
         if (this._gameObjects.has(componentName))
             return <IGameObject>this._gameObjects.get(componentName);

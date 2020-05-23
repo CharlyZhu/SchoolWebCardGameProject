@@ -26,7 +26,7 @@ export default class MenuPanel extends Phaser.GameObjects.Container
 
         this.texture = texture;
 
-        this.create();
+        // this.create();
     }
 
     public onEnable(): void {}
@@ -52,8 +52,8 @@ export default class MenuPanel extends Phaser.GameObjects.Container
                 this.disableAll();
             }
         );
-        //gameManager.addGameObject("back-button", this.backButton);
-        this.add(this.backButton);
+        // gameManager.addGameObject("back-button", this.backButton);
+        // this.add(this.backButton);
 
         this.alpha = 0;
     }

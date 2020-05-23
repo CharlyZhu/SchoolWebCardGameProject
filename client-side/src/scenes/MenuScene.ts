@@ -70,6 +70,7 @@ export class MenuScene extends Phaser.Scene {
         );
 
         this.helpPanel = new HelpPanel(this, this, 600, 300, "LargeMenuPanel");
+        this.helpPanel.create();
 
         this.settingPanel = new SettingsPanel(
             this,
@@ -78,6 +79,7 @@ export class MenuScene extends Phaser.Scene {
             300,
             "LargeMenuPanel"
         );
+        this.settingPanel.create();
 
         gameManager.addGameObject("start-button", this.gameBtn);
         gameManager.addGameObject("setting-button", this.settingBtn);

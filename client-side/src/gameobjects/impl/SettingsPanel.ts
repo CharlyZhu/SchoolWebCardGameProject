@@ -82,7 +82,7 @@ export default class SettingsPanel extends MenuPanel implements IGameObject {
         this.alpha = 1;
         this.menuScene.disableAll();
         this.backButton.setInteractive();
-        //this.soundButton.setInteractive();
+        this.soundButton.setInteractive();
     }
 
     private manageSound(): void {
@@ -91,8 +91,7 @@ export default class SettingsPanel extends MenuPanel implements IGameObject {
             this.soundStatus = false;
             this.soundIcon.setTexture("sound-off");
             // this.soundIcon.
-        } else !this.soundStatus;
-        {
+        } else if (!this.soundStatus) {
             this.soundStatus = true;
             this.soundIcon.setTexture("sound-on");
         }
