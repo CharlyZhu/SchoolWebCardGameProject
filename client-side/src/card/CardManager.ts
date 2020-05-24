@@ -25,7 +25,7 @@ class CardManager {
     // Obtains the image URL of a specific card from the array
     public getCardImgURL(index: number): string {
         if (index >= 0 && index < this.getCardListLength())
-            return this.CARD_IMG_BASE_URL + "000" + this._arrCardList[index].uid;
+            return this.CARD_IMG_BASE_URL + this._arrCardList[index].uid.toString().padStart(4, '0');
         else
             return "";
     }

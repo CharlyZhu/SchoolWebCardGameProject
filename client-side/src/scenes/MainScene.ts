@@ -45,8 +45,10 @@ export class MainScene extends Phaser.Scene {
     // Loads in sprite for cards from the internet using image URLs.
     public async loadCardSprites(): Promise<void> {
         await new Promise((resolve)=>{
-            for (let i = 0; i < cardMgr.getCardListLength(); i++)
+            for (let i = 0; i < cardMgr.getCardListLength(); i++) {
                 this.load.image(cardMgr.getCardName(i), cardMgr.getCardImgURL(i));
+                console.log(cardMgr.getCardName(i), cardMgr.getCardImgURL(i));
+            }
             resolve();
         });
     }
@@ -84,8 +86,6 @@ export class MainScene extends Phaser.Scene {
         let enemyWeaponStatus = new PlayerStats(this, 1000, 460, "icon-4", "Weapon-Placeholder");
 
         let timeMeter = new TimeMeter(this, 40, 290, "time-meter", "time-meter-fill", 60);
-
-        let xxx = new Button(this, 0, 0, );
 
         gameManager = new GameManager(this);
         gameManager.addGameObject("MessageBox", messageBoxComponent);
