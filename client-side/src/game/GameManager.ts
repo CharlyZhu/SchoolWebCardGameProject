@@ -15,8 +15,8 @@ export default class GameManager {
 
     public addGameObject(name: string, gameObject: IGameObject) {
         this._gameObjects.set(name, gameObject);
-        this._scene.add.existing(gameObject);
-        gameObject.onEnable();
+        // this._scene.add.existing(gameObject);
+        // gameObject.onEnable();
     }
 
     //doesn't work

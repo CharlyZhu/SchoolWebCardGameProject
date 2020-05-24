@@ -38,7 +38,7 @@ export class MenuScene extends Phaser.Scene {
             this,
             600,
             340,
-            "FIND ONLINE PLAYER",
+            "FIND MATCH",
             "button-long1",
             "button-long2",
             "button-long3",
@@ -86,6 +86,13 @@ export class MenuScene extends Phaser.Scene {
         gameManager.addGameObject("help-button", this.helpBtn);
         gameManager.addGameObject("help-panel", this.helpPanel);
         gameManager.addGameObject("settings-panel", this.settingPanel);
+
+        this.add.existing(this.gameBtn);
+        this.add.existing(this.settingBtn);
+        this.add.existing(this.helpBtn);
+        this.add.existing(this.helpPanel);
+        this.add.existing(this.settingPanel);
+
         this.enableAll();
     }
 
