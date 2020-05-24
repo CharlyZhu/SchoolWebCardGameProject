@@ -34,7 +34,7 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
             this.scaleX = -this.scaleX;
 
         this.CARD_DEAL_POS_X = x;
-        this.CARD_DEAL_POS_Y = y - scale * 20 - 20;
+        this.CARD_DEAL_POS_Y = y - scale * 20 - 30;
 
         // Rendering out character information.
         this.scene.add.existing(new Phaser.GameObjects.Image(scene, x, y + scale * 17, "icon-holder").setScale(scale / 2).setDepth(1));
@@ -66,11 +66,11 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         }, 50);
     }
 
-    public animateWeaponUpgrade() {
+    public animateTint(colour: number) {
         let times = 0;
         let id = setInterval(()=>{
             if (times % 2 === 0)
-                this.setTint(0xff3333);
+                this.setTint(colour);
             else
                 this.setTint(0xffffff);
             if (++times === 6)
@@ -97,6 +97,12 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         let difference = Math.abs(this._health - value);
         if (difference != 0)
             this.addFloatIndication("health", (this._health > value ? "-" : "+") + difference);
+        if (this._health > value) {
+            // animate attacked
+        }
+        else {
+            this.animateTint(0xcaffcf);
+        }
         this._healthIcon.setText(value.toString());
         this._health = value;
     }
@@ -111,6 +117,21 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
 
     public updateCardsLeft(value: number): void {
         this._cardsIcon.setText(value.toString());
+    }
+
+    public updateStrength(value: number): void {
+        this._strengthIcon.setText(value.toString());
+        this.animateTint(0xcacfcf);
+    }
+
+    public updateWeapon(value: number): void {
+        this._weaponIcon.setText(value.toString());
+        this.animateTint(0xff3333);
+    }
+
+    public updateArmour(value: number): void {
+        this._armourIcon.setText(value.toString());
+        this.animateTint(0xaaaaaa);
     }
 
     public addFloatIndication(type: string, value: string) {

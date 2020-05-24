@@ -73,11 +73,11 @@ connInit = (conn, connId)=>{
 
     // Attempts to draw certain amount of cards for player. Will do nothing if player cannot draw more cards.
     conn.drawCard = (amount = 1) => {
-        if (conn.arrCardsInHand.length + amount > playerConfig.gamePlay.maxHand) {
-            conn.displayMessage("You did not draw a card as you cannot hold more than " + playerConfig.gamePlay.maxHand + " cards.", '#FF9E00');
-            return;
-        }
         for (let i = 0; i < amount; i++) {
+            if (conn.arrCardsInHand.length + 1 > playerConfig.gamePlay.maxHand) {
+                conn.displayMessage("You did not draw more card as you cannot hold more than " + playerConfig.gamePlay.maxHand + " cards.", '#FF9E00');
+                return;
+            }
             let cardId = conn.getRandomCardFromDeck();
             conn.sendJson({type: "game", action: "draw", value: cardId});
             // Subtract the number of a specific type of card from the deck.
@@ -85,7 +85,8 @@ connInit = (conn, connId)=>{
             conn.arrCardsInHand.push(cardId);
         }
         conn.updateInfo("cards-left");
-        conn.opponent.updateInfo("enemy-cards-left");
+        conn.opponent.updateInfo("cards-left", true);
+        console.log(conn.getCardsLeft());
     };
 
     // Tells player if it is their turn.
@@ -97,7 +98,7 @@ connInit = (conn, connId)=>{
     conn.alterMana = (value) => {
         conn.mana += value;
         conn.updateInfo("mana");
-        conn.opponent.updateInfo("enemy-mana");
+        conn.opponent.updateInfo("mana", true);
     };
 
     // Damages opponent and plays animation.
@@ -107,7 +108,7 @@ connInit = (conn, connId)=>{
         conn.sendJson({type: "game", action: "damage", is_enemy: true, value: value});
         conn.opponent.sendJson({type: "game", action: "damage", is_enemy: false, value: value});
         conn.updateInfo("health");
-        conn.opponent.updateInfo("enemy-health");
+        conn.opponent.updateInfo("health", true);
     };
 
     conn.heal = (value) => {
@@ -116,18 +117,16 @@ connInit = (conn, connId)=>{
         conn.sendJson({type: "game", action: "heal", is_enemy: false, value: value});
         conn.opponent.sendJson({type: "game", action: "heal", is_enemy: true, value: value});
         conn.updateInfo("health");
-        conn.opponent.updateInfo("enemy-health");
+        conn.opponent.updateInfo("health", true);
     };
 
     // Calculates the damage from damage object and damages player's opponent.
     conn.dealDamage = (dmgObj) => {
-        let output = 0;
         if (!dmgObj)
-            return output;
+            return;
         if (dmgObj.weapon) {
             let extraDmg = dmgObj.weapon * conn.weapon;
-            output += extraDmg;
-            conn.opponent.damage(extraDmg);
+            conn.opponent.damage(Math.max(0, extraDmg - conn.opponent.armour));
         }
         if (dmgObj.strength) {
             let extraDmg = 0;
@@ -138,21 +137,20 @@ connInit = (conn, connId)=>{
             }
             else
                 extraDmg = dmgObj.strength * conn.strength;
-            output += extraDmg;
             conn.opponent.damage(extraDmg);
         }
         if (dmgObj.random) {
             let extraDmg = dmgObj.random[0] + Math.floor(Math.random() * dmgObj.random[1]);
-            output += extraDmg;
             conn.opponent.damage(extraDmg);
         }
-        return output;
     };
 
     // Discards a certain amount of random cards for player.
     conn.discard = (amount=1)=>{
         while (conn.getRandomCardFromDeck() >= 0 && amount > 0) {
-            conn.removeCard(conn.getRandomCardFromDeck());
+            let card = conn.getRandomCardFromDeck();
+            if (card !== -1)
+                conn.removeCard(card);
             amount--;
         }
     };
@@ -170,7 +168,7 @@ connInit = (conn, connId)=>{
     // Gets how many cards player has left in their deck.
     conn.getCardsLeft = ()=>{
         let value = 0;
-        for (let i = 1; i <= 6; i++)
+        for (let i = 0; i < 12; i++)
             value += conn.arrCardDeck[i];
         return value;
     };
@@ -187,29 +185,32 @@ connInit = (conn, connId)=>{
         else
             conn.displayMessage("You have lost the game.", '#654321', true); // TODO: This could be moved to client side?
         conn.sendJson({type: "game", action: "game-end", value: value});
-        conn.status = "GAME-ENDED";
+        conn.close();
     };
 
     // Sends player game information.
-    conn.updateInfo = (infoType) => {
+    conn.updateInfo = (infoType, isEnemy=false) => {
+        let target = conn;
+        if (isEnemy)
+            target = conn.opponent;
         switch(infoType) {
             case "health":
-                conn.sendJson({type: "game", action: "info", info_type: "health", is_enemy: false, value: conn.health});
-                break;
-            case "enemy-health":
-                conn.sendJson({type: "game", action: "info", info_type: "health", is_enemy: true, value: conn.opponent.health});
+                conn.sendJson({type: "game", action: "info", info_type: "health", is_enemy: isEnemy, value: target.health});
                 break;
             case "cards-left":
-                conn.sendJson({type: "game", action: "info", info_type: "cards-left", is_enemy: false, value: conn.getCardsLeft()});
-                break;
-            case "enemy-cards-left":
-                conn.sendJson({type: "game", action: "info", info_type: "cards-left", is_enemy: true, value: conn.opponent.getCardsLeft()});
+                conn.sendJson({type: "game", action: "info", info_type: "cards-left", is_enemy: isEnemy, value: target.getCardsLeft()});
                 break;
             case "mana":
-                conn.sendJson({type: "game", action: "info", info_type: "mana", is_enemy: false, value: conn.mana});
+                conn.sendJson({type: "game", action: "info", info_type: "mana", is_enemy: isEnemy, value: target.mana});
                 break;
-            case "enemy-mana":
-                conn.sendJson({type: "game", action: "info", info_type: "mana", is_enemy: true, value: conn.opponent.mana});
+            case "weapon":
+                conn.sendJson({type: "game", action: "info", info_type: "weapon", is_enemy: isEnemy, value: target.weapon});
+                break;
+            case "armour":
+                conn.sendJson({type: "game", action: "info", info_type: "armour", is_enemy: isEnemy, value: target.armour});
+                break;
+            case "strength":
+                conn.sendJson({type: "game", action: "info", info_type: "strength", is_enemy: isEnemy, value: target.strength});
                 break;
         }
     };
@@ -231,9 +232,15 @@ connInit = (conn, connId)=>{
         conn.updateInfo("health");
         conn.updateInfo("cards-left");
         conn.updateInfo("mana");
-        conn.updateInfo("enemy-health");
-        conn.updateInfo("enemy-cards-left");
-        conn.updateInfo("enemy-mana");
+        conn.updateInfo("weapon");
+        conn.updateInfo("strength");
+        conn.updateInfo("armour");
+        conn.updateInfo("health", true);
+        conn.updateInfo("cards-left", true);
+        conn.updateInfo("mana", true);
+        conn.updateInfo("weapon", true);
+        conn.updateInfo("strength", true);
+        conn.updateInfo("armour", true);
         conn.displayMessage("Game starting.. You have been assigned to opponent [" + opponentConn.id + "], try not to cheat during the game.");
         conn.sendJson({type: "game", action: "confirm-game"});
         conn.drawCard(3);

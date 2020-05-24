@@ -75,28 +75,38 @@ connOnMessageCb = (conn, msg)=>{
                         conn.displayMessage("You do not have enough mana.");
                         break;
                     }
-
                     // Doing this before calculation of damage as strength and weapon damage affects damage.
-                    if (cardData.weapon && cardData.weapon > 0)
+                    if (cardData.weapon && cardData.weapon > 0) {
                         conn.weapon = cardData.weapon;
-                    if (cardData.strength && cardData.strength > 0)
-                        conn.strength = cardData.strength;
-
+                        conn.updateInfo("weapon");
+                        conn.opponent.updateInfo("weapon", true);
+                    }
+                    if (cardData.strength && cardData.strength > 0) {
+                        conn.strength += parseInt(cardData.strength);
+                        conn.updateInfo("strength");
+                        conn.opponent.updateInfo("strength", true);
+                    }
+                    console.log(cardData.armour);
+                    if (cardData.armour && parseInt(cardData.armour) > 0) {
+                        conn.armour = parseInt(cardData.armour);
+                        conn.updateInfo("armour");
+                        conn.opponent.updateInfo("armour", true);
+                    }
                     // Deal card damage if it has any.
                     conn.dealDamage(cardData.damage);
-
                     // Doing this after calculation of damage as player left over mana is required to calculate.
                     if (cardCost > 0)
                         conn.alterMana(-cardCost);
+                    // Remove card before discard.
                     conn.removeCard(obj.value);
-
+                    // Discard card before draw.
                     if (cardData.discard && cardData.discard > 0)
                         conn.discard(cardData.discard);
                     if (cardData.draw && cardData.draw > 0)
                         conn.drawCard(cardData.draw);
                     if (cardData.heal && cardData.heal > 0)
                         conn.heal(cardData.heal);
-
+                    // Adds mana.
                     if (cardData.mana && cardData.mana > 0)
                         conn.alterMana(cardData.mana);
 
@@ -104,7 +114,7 @@ connOnMessageCb = (conn, msg)=>{
                     conn.opponent.showCardOnBoard(cardUid, true);
                     break;
                 case "draw":
-                    /* This functionality should not be open for common users. */
+                    /** This functionality should not be open for common users. */
                     if (!conn.iAmHacker)
                         return;
                     if (!conn.validateGameAction())

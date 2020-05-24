@@ -50,25 +50,51 @@ export function handleResponse(response: string) {
                     break;
                 case "info":
                     // TODO: probably better to pass in a json object and let character handle it.
-                    switch (jsonObj.info_type) {
-                        case "health":
-                            if (jsonObj.is_enemy)
-                                gameManager.getGameObject("EnemyCharacter").updateHealth(jsonObj.value);
-                            else
-                                gameManager.getGameObject("Character").updateHealth(jsonObj.value);
-                            break;
-                        case "cards-left":
-                            if (jsonObj.is_enemy)
-                                gameManager.getGameObject("EnemyCharacter").updateCardsLeft(jsonObj.value);
-                            else
-                                gameManager.getGameObject("Character").updateCardsLeft(jsonObj.value);
-                            break;
-                        case "mana":
-                            if (jsonObj.is_enemy)
-                                gameManager.getGameObject("EnemyCharacter").updateMana(jsonObj.value);
-                            else
-                                gameManager.getGameObject("Character").updateMana(jsonObj.value);
-                            break;
+                    if (!jsonObj.is_enemy) {
+                        let player: Character = <Character>gameManager.getGameObject("Character");
+                        switch (jsonObj.info_type) {
+                            case "health":
+                                player.updateHealth(jsonObj.value);
+                                break;
+                            case "mana":
+                                player.updateMana(jsonObj.value);
+                                break;
+                            case "weapon":
+                                player.updateWeapon(jsonObj.value);
+                                break;
+                            case "armour":
+                                player.updateArmour(jsonObj.value);
+                                break;
+                            case "cards-left":
+                                player.updateCardsLeft(jsonObj.value);
+                                break;
+                            case "strength":
+                                player.updateStrength(jsonObj.value);
+                                break;
+                        }
+                    }
+                    else {
+                        let enemy: Character = <Character>gameManager.getGameObject("EnemyCharacter");
+                        switch (jsonObj.info_type) {
+                            case "health":
+                                enemy.updateHealth(jsonObj.value);
+                                break;
+                            case "mana":
+                                enemy.updateMana(jsonObj.value);
+                                break;
+                            case "weapon":
+                                enemy.updateWeapon(jsonObj.value);
+                                break;
+                            case "armour":
+                                enemy.updateArmour(jsonObj.value);
+                                break;
+                            case "cards-left":
+                                enemy.updateCardsLeft(jsonObj.value);
+                                break;
+                            case "strength":
+                                enemy.updateStrength(jsonObj.value);
+                                break;
+                        }
                     }
                     break;
                 case "turn-status":

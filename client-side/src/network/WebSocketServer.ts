@@ -53,7 +53,7 @@ export class WebSocketServer {
 
     // Send a message to server for broadcasting.
     private sendChat(msg: string): void {
-        this.sendToServer({ type: "broadcast", message: msg });
+        this.sendToServer({type: "broadcast", message: msg});
     }
 
     // Send an command to server.

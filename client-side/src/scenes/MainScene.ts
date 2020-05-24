@@ -68,7 +68,6 @@ export class MainScene extends Phaser.Scene {
         background.scale *= 3.5;
 
         let queueNotice = new Notice(this, 500, 440, "queue-notice");
-        let messageBoxComponent = new MessageBox(this, 80, 350, "text-holder");
         let cardHolderComponent = new CardHolder(this, 20, 580, "card-holder");
         let endTurnButton = new Button(this, 1080, 550, "END TURN",
             "button-normal",
@@ -86,10 +85,10 @@ export class MainScene extends Phaser.Scene {
         let enemyArmourStats = new PlayerStats(this, 1000, 440, "icon-3", "Armour-Placeholder");
         let enemyWeaponStatus = new PlayerStats(this, 1000, 460, "icon-4", "Weapon-Placeholder");
 
-        let timeMeter = new TimeMeter(this, 40, 290, "time-meter", "time-meter-fill", 60);
+        let timeMeter = new TimeMeter(this, 660, 290, "time-meter", "time-meter-fill", 60);
 
         gameManager = new GameManager(this);
-        gameManager.addGameObject("MessageBox", messageBoxComponent);
+        gameManager.addGameObject("MessageBox", new MessageBox(this, 30, 350, "text-holder"));
         gameManager.addGameObject("CardHolder", cardHolderComponent);
         gameManager.addGameObject("Character", new Character(this, 850, 190, "knight-idle"));
         gameManager.addGameObject("EnemyCharacter", new Character(this, 1120, 170, "knight-idle", 3, true));
