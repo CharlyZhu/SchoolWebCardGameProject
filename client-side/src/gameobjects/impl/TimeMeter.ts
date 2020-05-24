@@ -26,7 +26,6 @@ export default class TimeMeter extends Phaser.GameObjects.Image implements IGame
         this.intervalID = setInterval(()=>{
             this.currentValue--;
             this._fill.scaleY = this.scaleY * this.currentValue / this.value;
-            console.log(this.scaleY * this.currentValue / this.value);
             if (this.currentValue == 0)
                 this.pauseCountdown();
         }, 1000);
