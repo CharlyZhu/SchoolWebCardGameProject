@@ -2,14 +2,18 @@ import {readJSON} from "../util";
 import {server} from "./index";
 
 const emojiJsonUrl = "//www.empiraft.com/resources/card_game/json/?file=emojis";
+const emojiBox: HTMLElement = document.querySelector("#emoji-box");
 export let emojisList;
 // Creates an intractable emoji box for console.
-export function setupEmojiBox(emojiBox: HTMLElement) {
+export function setupEmojiBox(): Promise<void> {
     // Obtain the emoji json file.
-    readJSON(emojiJsonUrl).then((result)=>{
-        emojisList = result.emojis;
-        createEmojiBox(emojiBox, emojisList);
-        setupEmojiBoxClickCb(emojiBox);
+    return new Promise<void>((resolve)=>{
+        readJSON(emojiJsonUrl).then((result)=>{
+            emojisList = result.emojis;
+            createEmojiBox(emojiBox, emojisList);
+            setupEmojiBoxClickCb(emojiBox);
+            resolve();
+        });
     });
 }
 

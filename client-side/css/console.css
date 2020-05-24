@@ -3,6 +3,13 @@ body {
     font-family: Helvetica, Arial;
 }
 
+#load {
+    position: fixed;
+    left: 0; top: 0;
+    font-size: 50px;
+    color: #ff1d02;
+}
+
 #particles-js {
     z-index: -1;
     top: 0; left: 0;

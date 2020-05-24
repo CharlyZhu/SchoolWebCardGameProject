@@ -1,28 +1,38 @@
-import { WebSocketServer } from "../network/WebSocketServer";
+/*import { WebSocketServer } from "../network/WebSocketServer";
 import { setupEmojiBox } from "./emojiHandler";
 import { setupInputControl } from "./inputControl";
 import { ConsolePlayer } from "../player/impl/ConsolePlayer";
 import { handleResponse, setConnectionDetails } from "./responseHandler";
 import { obtainCardList } from "../card/CardManager";
 
-// Things that has to be loaded before server init. Should move to a promise thing later.
-setupEmojiBox(document.querySelector("#emoji-box"));
-obtainCardList();
+// Load stuff. TODO: Move to another location.
+let loadProgressPercent = 0;
+const loadSection: HTMLElement = document.querySelector("#load");
+function addLoadProgress(progress: number) {
+    loadProgressPercent += progress;
+    loadSection.innerText = "Loaded: " + loadProgressPercent + "%";
+}
 
-// Web server stuff:
-export const server = new WebSocketServer();
+// Declare variables.
 export const player = new ConsolePlayer();
-server.init().then(() => {
-    setupInputControl();
+export const server = new WebSocketServer();
 
-    // Calls when message received from server.
-    server.ws.onmessage = (data) => handleResponse(data.data.toString());
-
-    let checker = setInterval(()=>{
-        server.sendToServer({type: "obtain", target: "info"});
-        if (server.ws.readyState === server.ws.CLOSED) {
-            clearInterval(checker);
-            setConnectionDetails("-", "-", "DISCONNECTED");
-        }
-    }, 1000);
+// Chain of method calls, call whats needed first then the next.
+obtainCardList().then(()=>{
+    addLoadProgress(30);
+    setupEmojiBox().then(()=>{
+        addLoadProgress(30);
+        server.init((response)=>handleResponse(response)).then(()=> {
+            addLoadProgress(30);
+            serverSetupCb(server);
+        });
+    });
 });
+
+// Callback function that runs after server initialization.
+function serverSetupCb(server) {
+    setupInputControl();
+    server.setTimerTask({type: "obtain", target: "info"}, 1000, ()=>setConnectionDetails("-", "-", "DISCONNECTED"));
+    addLoadProgress(10);
+}
+*/

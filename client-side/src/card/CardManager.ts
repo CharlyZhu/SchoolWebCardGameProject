@@ -1,18 +1,4 @@
-import { Card } from "./card";
-import {readJSON} from "../util";
-
-// This dictionary should contain all the card information there is in the whole game.
-// The key is the identifier, ie: the unique ID for the card.
-// The value should contain the information of the card itself.
-export let cardsList: Array;
-// Defines important variables.
-const cardJsonUrl = "//www.empiraft.com/resources/card_game/json/?file=cards";
-// Obtains the card list from online JSON files, storing card information in variable cardsList.
-export function obtainCardList(): void {
-    readJSON(cardJsonUrl).then((result)=>{
-        cardsList = result.cards;
-    });
-}
+import { readJSON } from "../util";
 
 export interface ICard {
     name: string;
@@ -22,10 +8,47 @@ export interface ICard {
     imageURL: string;
 }
 
-export class CardManager {
-    public arrCard: Card[] = [];
-    public constructor() {
-        for (let i = 1; i < 6; i++ ) {}
+// This class holds the information of all cards and basic functions for card manipulation.
+class CardManager {
+    // Important information.
+    private readonly CARD_INFO_JSON_URL = "//www.empiraft.com/resources/card_game/json/?file=cards";
+    private readonly CARD_IMG_BASE_URL = "//www.empiraft.com/resources/card_game/img/?file=";
+
+    // This array should contain all the card information there is in the whole game.
+    private _arrCardList: Array;
+
+    // Obtains the card array length.
+    public getCardListLength(): number {
+        return this._arrCardList.length;
+    }
+
+    // Obtains the image URL of a specific card from the array
+    public getCardImgURL(index: number): string {
+        if (index >= 0 && index < this.getCardListLength())
+            return this.CARD_IMG_BASE_URL + this._arrCardList[index].uid.toString().padStart(4, '0');
+        else
+            return "";
+    }
+
+    // Obtains the image URL of a specific card from the array
+    public getCardName(index: number): string {
+        if (index >= 0 && index < this.getCardListLength())
+            return this._arrCardList[index].name;
+        else
+            return "";
+    }
+
+    // Obtains the card information array from the internet.
+    public async obtainCardList(): Promise<void> {
+        await new Promise((resolve, reject) => {
+            readJSON(this.CARD_INFO_JSON_URL).then((result) => {
+                this._arrCardList = result.cards;
+                resolve();
+            }).catch((error) => {
+                reject(error);
+            });
+        });
     }
 }
-  
+
+export const cardMgr: CardManager = new CardManager();
