@@ -19,6 +19,11 @@ export default class GameManager {
         gameObject.onEnable();
     }
 
+    public addGameObjectAnonymously(gameObject: IGameObject) {
+        this._scene.add.existing(gameObject);
+        gameObject.onEnable();
+    }
+
     public removeGameObject(name: string) {
         if (this._gameObjects.has(name))
             this._gameObjects.delete(name);

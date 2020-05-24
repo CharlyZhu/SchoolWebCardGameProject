@@ -49,24 +49,25 @@ export function handleResponse(response: string) {
                         gameManager.getGameObject("EnemyCharacter").displayCard(jsonObj.value);
                     break;
                 case "info":
+                    // TODO: probably better to pass in a json object and let character handle it.
                     switch (jsonObj.info_type) {
                         case "health":
                             if (jsonObj.is_enemy)
-                                gameManager.getGameObject("EnemyCharacter").updateHealthText(jsonObj.value);
+                                gameManager.getGameObject("EnemyCharacter").updateHealth(jsonObj.value);
                             else
-                                gameManager.getGameObject("Character").updateHealthText(jsonObj.value);
+                                gameManager.getGameObject("Character").updateHealth(jsonObj.value);
                             break;
                         case "cards-left":
                             if (jsonObj.is_enemy)
-                                gameManager.getGameObject("EnemyCharacter").updateCardsLeftText(jsonObj.value);
+                                gameManager.getGameObject("EnemyCharacter").updateCardsLeft(jsonObj.value);
                             else
-                                gameManager.getGameObject("Character").updateCardsLeftText(jsonObj.value);
+                                gameManager.getGameObject("Character").updateCardsLeft(jsonObj.value);
                             break;
                         case "mana":
                             if (jsonObj.is_enemy)
-                                gameManager.getGameObject("EnemyCharacter").updateManaText(jsonObj.value);
+                                gameManager.getGameObject("EnemyCharacter").updateMana(jsonObj.value);
                             else
-                                gameManager.getGameObject("Character").updateManaText(jsonObj.value);
+                                gameManager.getGameObject("Character").updateMana(jsonObj.value);
                             break;
                     }
                     break;

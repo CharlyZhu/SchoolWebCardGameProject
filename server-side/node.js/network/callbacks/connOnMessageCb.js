@@ -75,29 +75,31 @@ connOnMessageCb = (conn, msg)=>{
                         conn.displayMessage("You do not have enough mana.");
                         break;
                     }
-                    // Calculate card damage if it has any.
-                    let cardDmg = conn.calculateCardDmg(cardData.damage);
 
-                    /** IF NEW STUFF ADDED NEEDS TO BE CALCULATED, ADD THEM BEFORE APPLYING CHANGE! */
+                    // Doing this before calculation of damage as strength and weapon damage affects damage.
+                    if (cardData.weapon && cardData.weapon > 0)
+                        conn.weapon = cardData.weapon;
+                    if (cardData.strength && cardData.strength > 0)
+                        conn.strength = cardData.strength;
 
+                    // Deal card damage if it has any.
+                    conn.dealDamage(cardData.damage);
+
+                    // Doing this after calculation of damage as player left over mana is required to calculate.
                     if (cardCost > 0)
                         conn.alterMana(-cardCost);
-                    if (cardDmg > 0)
-                        conn.opponent.damage(cardDmg);
+                    conn.removeCard(obj.value);
+
                     if (cardData.discard && cardData.discard > 0)
                         conn.discard(cardData.discard);
                     if (cardData.draw && cardData.draw > 0)
                         conn.drawCard(cardData.draw);
                     if (cardData.heal && cardData.heal > 0)
                         conn.heal(cardData.heal);
-                    if (cardData.weapon && cardData.weapon > 0)
-                        conn.weapon = cardData.weapon;
-                    if (cardData.strength && cardData.strength > 0)
-                        conn.strength = cardData.strength;
+
                     if (cardData.mana && cardData.mana > 0)
                         conn.alterMana(cardData.mana);
 
-                    conn.removeCard(obj.value);
                     conn.showCardOnBoard(cardUid);
                     conn.opponent.showCardOnBoard(cardUid, true);
                     break;

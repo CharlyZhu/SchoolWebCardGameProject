@@ -1,10 +1,12 @@
 import {IGameObject} from "../IGameObject";
-import {MainScene} from "../../scenes/MainScene";
+import {gameManager, MainScene} from "../../scenes/MainScene";
 import Message from "../../game/Message";
 import Card from "../../card/Card";
 import {cardMgr} from "../../card/CardManager";
+import FloatIndication from "./FloatIndication";
 
 export default class Character extends Phaser.GameObjects.Sprite implements IGameObject {
+    private _arrPendingFloatIndicator: {}[];
     private readonly _txtHealth: Message;
     private readonly _txtCardsLeft: Message;
     private readonly _txtMana: Message;
@@ -12,6 +14,12 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
     private _cardDisplay: Card;
     public readonly CARD_DEAL_POS_X;
     public readonly CARD_DEAL_POS_Y;
+
+    private _health: number = 30;
+    private _mana: number = 0;
+    private _weapon: number = 6;
+    private _strength: number = 1;
+    private _armour: number = 1;
 
     public constructor(scene: MainScene, x: number, y: number, characterSprite: string, scale: number = 5, reversed: boolean = false) {
         super(scene, x, y, characterSprite);
@@ -28,6 +36,8 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         this._txtHealth = new Message(this.scene, x - 30, y - scale * 20 - 30, "HEALTH", 13);
         this._txtCardsLeft = new Message(this.scene, x - 30, y - scale * 20 - 20, "CARDS_LEFT", 13);
         this._txtMana = new Message(this.scene, x - 30, y - scale * 20 - 10, "MANA", 13);
+
+        this._arrPendingFloatIndicator = [];
     }
 
     public playAnimation(characterAnimation: string, onCompleteCb=()=>{}) {
@@ -35,6 +45,7 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         this.once("animationcomplete", onCompleteCb);
     }
 
+    // Animates that this character had been damaged.
     public animateDamage() {
         let times = 0;
         let id = setInterval(()=>{
@@ -74,17 +85,54 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         this.scene.add.existing(this._cardDisplay);
     }
 
-    public updateHealthText(value: number): void {
+    public updateHealth(value: number): void {
+        let difference = Math.abs(this._health - value);
+        if (difference != 0)
+            this.addFloatIndication("health", (this._health > value ? "-" : "+") + difference);
         this._txtHealth.text = "Health: " + value;
+        this._health = value;
     }
 
-    public updateCardsLeftText(value: number): void {
+    public updateMana(value: number): void {
+        let difference = Math.abs(this._mana - value);
+        if (difference != 0)
+            this.addFloatIndication("mana", (this._mana > value ? "-" : "+") + difference);
+        this._txtMana.text = "Mana: " + value;
+        this._mana = value;
+    }
+
+    public updateCardsLeft(value: number): void {
         this._txtCardsLeft.text = "Cards Left: " + value;
     }
 
-    public updateManaText(value: number): void {
-        this._txtMana.text = "Mana: " + value;
+    public addFloatIndication(type: string, value: string) {
+        let texture = "icon-1";
+        switch(type) {
+            case "damage":
+                texture = "icon-1";
+                break;
+            case "mana":
+                texture = "icon-2";
+                break;
+            case "armour":
+                texture = "icon-3";
+                break;
+            case "weapon":
+                texture = "icon-4";
+                break;
+            case "strength":
+                texture = "icon-4";
+                break;
+        }
+        this._arrPendingFloatIndicator.push({texture: texture, value: value});
     }
 
-    onEnable() {}
+    onEnable() {
+        setInterval(()=>{
+            if (this._arrPendingFloatIndicator.length > 0) {
+                let indicator = this._arrPendingFloatIndicator.shift();
+                gameManager.addGameObjectAnonymously(new FloatIndication(this.scene, this.x + Math.random() * 40 - 20, this.y + Math.random() * 40 - 80, indicator.texture, indicator.value));
+            }
+        }, 500);
+    }
 }

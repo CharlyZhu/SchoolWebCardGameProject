@@ -24,11 +24,10 @@ connInit = (conn, connId)=>{
     // Assigns the cards in player hand to be an empty array.
     conn.arrCardsInHand = Array();
     // Basic player game info setup.
-    conn.health = 100;
-    conn.damage = 6;
+    conn.health = 30;
     conn.mana = 0;
     conn.isTurn = false;
-    conn.turnTime = 60;
+    conn.turnTime = playerConfig.gamePlay.timePerTurn;
     conn.weapon = 6;
     conn.strength = 1;
     conn.armour = 1;
@@ -112,7 +111,7 @@ connInit = (conn, connId)=>{
     };
 
     conn.heal = (value) => {
-        conn.health += value;
+        conn.health += parseInt(value);
         // TODO: This could be simplified client side, client can check the change and decide what animation to play.
         conn.sendJson({type: "game", action: "heal", is_enemy: false, value: value});
         conn.opponent.sendJson({type: "game", action: "heal", is_enemy: true, value: value});
@@ -120,30 +119,32 @@ connInit = (conn, connId)=>{
         conn.opponent.updateInfo("enemy-health");
     };
 
-    // Calculates the damage from damage object.
-    conn.calculateCardDmg = (dmgObj) => {
+    // Calculates the damage from damage object and damages player's opponent.
+    conn.dealDamage = (dmgObj) => {
         let output = 0;
         if (!dmgObj)
             return output;
         if (dmgObj.weapon) {
             let extraDmg = dmgObj.weapon * conn.weapon;
             output += extraDmg;
-            conn.sendJson({type: "game", action: "damage-indicator", value: extraDmg});
+            conn.opponent.damage(extraDmg);
         }
         if (dmgObj.strength) {
             let extraDmg = 0;
             // If strength is -1, deal all mana as damage.
-            if (dmgObj.strength == -1)
-                extraDmg = dmgObj.strength * conn.mana;
+            if (dmgObj.strength === -1) {
+                for (let i = 0; i < conn.mana; i++)
+                    conn.opponent.damage(conn.strength);
+            }
             else
                 extraDmg = dmgObj.strength * conn.strength;
             output += extraDmg;
-            conn.sendJson({type: "game", action: "damage-indicator", value: extraDmg});
+            conn.opponent.damage(extraDmg);
         }
         if (dmgObj.random) {
             let extraDmg = dmgObj.random[0] + Math.floor(Math.random() * dmgObj.random[1]);
             output += extraDmg;
-            conn.sendJson({type: "game", action: "damage-indicator", value: extraDmg});
+            conn.opponent.damage(extraDmg);
         }
         return output;
     };
