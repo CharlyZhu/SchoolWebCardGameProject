@@ -9,6 +9,9 @@ export default class Card extends Phaser.GameObjects.Image {
     public effects: {};
     public imageURL: string;
 
+    public velocityX: number;
+    public targetPosX: number;
+
     private _disabled: boolean;
 
     public constructor(scene: Phaser.Scene, x: number, y: number, textureID: string, scale: number=3.5) {
@@ -26,6 +29,8 @@ export default class Card extends Phaser.GameObjects.Image {
             if (!this._disabled)
                 this.setTint(0xffffff);
         });
+
+        this.velocityX = this.targetPosX = 0;
     }
 
     public setDisabled(value: boolean): void {

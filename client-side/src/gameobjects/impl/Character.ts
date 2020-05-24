@@ -1,15 +1,19 @@
 import {IGameObject} from "../IGameObject";
 import {gameManager, MainScene} from "../../scenes/MainScene";
-import Message from "../../game/Message";
 import Card from "../../card/Card";
 import {cardMgr} from "../../card/CardManager";
 import FloatIndication from "./FloatIndication";
+import Icon from "./Icon";
 
 export default class Character extends Phaser.GameObjects.Sprite implements IGameObject {
     private _arrPendingFloatIndicator: {}[];
-    private readonly _txtHealth: Message;
-    private readonly _txtCardsLeft: Message;
-    private readonly _txtMana: Message;
+
+    private readonly _healthIcon: Icon;
+    private readonly _weaponIcon: Icon;
+    private readonly _strengthIcon: Icon;
+    private readonly _armourIcon: Icon;
+    private readonly _manaIcon: Icon;
+    private readonly _cardsIcon: Icon;
 
     private _cardDisplay: Card;
     public readonly CARD_DEAL_POS_X;
@@ -21,7 +25,7 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
     private _strength: number = 1;
     private _armour: number = 1;
 
-    public constructor(scene: MainScene, x: number, y: number, characterSprite: string, scale: number = 5, reversed: boolean = false) {
+    public constructor(scene: Phaser.Scene, x: number, y: number, characterSprite: string, scale: number = 5, reversed: boolean = false) {
         super(scene, x, y, characterSprite);
         this.setOrigin(.5, .5);
         this.scale = scale;
@@ -30,12 +34,16 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
             this.scaleX = -this.scaleX;
 
         this.CARD_DEAL_POS_X = x;
-        this.CARD_DEAL_POS_Y = y - scale * 20 - 60;
+        this.CARD_DEAL_POS_Y = y - scale * 20 - 20;
 
         // Rendering out character information.
-        this._txtHealth = new Message(this.scene, x - 30, y - scale * 20 - 30, "HEALTH", 13);
-        this._txtCardsLeft = new Message(this.scene, x - 30, y - scale * 20 - 20, "CARDS_LEFT", 13);
-        this._txtMana = new Message(this.scene, x - 30, y - scale * 20 - 10, "MANA", 13);
+        this.scene.add.existing(new Phaser.GameObjects.Image(scene, x, y + scale * 17, "icon-holder").setScale(scale / 2).setDepth(1));
+        this._healthIcon = new Icon(scene, x - scale * 16, y + scale * 17, "icon-1", this._health.toString(), scale / 2);
+        this._manaIcon = new Icon(scene, x - scale * 8, y + scale * 17, "icon-2", this._mana.toString(), scale / 2);
+        this._armourIcon = new Icon(scene, x, y + scale * 17, "icon-3", this._weapon.toString(), scale / 2);
+        this._weaponIcon = new Icon(scene, x + scale * 8, y + scale * 17, "icon-4", this._strength.toString(), scale / 2);
+        this._strengthIcon = new Icon(scene, x + scale * 16, y + scale * 17, "icon-5", this._armour.toString(), scale / 2);
+        this._cardsIcon = new Icon(scene, x + (reversed ?  scale * 16 : -scale * 16), y - scale * 10, "icon-6", "30", scale / 2);
 
         this._arrPendingFloatIndicator = [];
     }
@@ -89,7 +97,7 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         let difference = Math.abs(this._health - value);
         if (difference != 0)
             this.addFloatIndication("health", (this._health > value ? "-" : "+") + difference);
-        this._txtHealth.text = "Health: " + value;
+        this._healthIcon.setText(value.toString());
         this._health = value;
     }
 
@@ -97,12 +105,12 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         let difference = Math.abs(this._mana - value);
         if (difference != 0)
             this.addFloatIndication("mana", (this._mana > value ? "-" : "+") + difference);
-        this._txtMana.text = "Mana: " + value;
+        this._manaIcon.setText(value.toString());
         this._mana = value;
     }
 
     public updateCardsLeft(value: number): void {
-        this._txtCardsLeft.text = "Cards Left: " + value;
+        this._cardsIcon.setText(value.toString());
     }
 
     public addFloatIndication(type: string, value: string) {
@@ -121,13 +129,19 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
                 texture = "icon-4";
                 break;
             case "strength":
-                texture = "icon-4";
+                texture = "icon-5";
                 break;
         }
         this._arrPendingFloatIndicator.push({texture: texture, value: value});
     }
 
     onEnable() {
+        gameManager.addGameObjectAnonymously(this._healthIcon);
+        gameManager.addGameObjectAnonymously(this._manaIcon);
+        gameManager.addGameObjectAnonymously(this._weaponIcon);
+        gameManager.addGameObjectAnonymously(this._armourIcon);
+        gameManager.addGameObjectAnonymously(this._strengthIcon);
+        gameManager.addGameObjectAnonymously(this._cardsIcon);
         setInterval(()=>{
             if (this._arrPendingFloatIndicator.length > 0) {
                 let indicator = this._arrPendingFloatIndicator.shift();

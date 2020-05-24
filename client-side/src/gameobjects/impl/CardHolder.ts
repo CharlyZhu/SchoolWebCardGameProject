@@ -17,7 +17,8 @@ export default class CardHolder extends Phaser.GameObjects.Image implements IGam
     }
 
     public addCardToHand(index: number): void {
-        let card = new Card(this.scene, this._arrPlayerHand.length * this.CARDS_IN_HAND_INTERVAL_X + this.CARDS_IN_HAND_ANCHOR_X, this.CARDS_IN_HAND_ANCHOR_Y, cardMgr.getCardName(index));
+        let card = new Card(this.scene, 2000, this.CARDS_IN_HAND_ANCHOR_Y, cardMgr.getCardName(index));
+        card.targetPosX = this._arrPlayerHand.length * this.CARDS_IN_HAND_INTERVAL_X + this.CARDS_IN_HAND_ANCHOR_X;
         card.indexInHand = this._arrPlayerHand.length;
         this.scene.add.existing(card);
 
@@ -41,7 +42,7 @@ export default class CardHolder extends Phaser.GameObjects.Image implements IGam
         for (let i: number in this._arrPlayerHand) {
             let card = this._arrPlayerHand[i];
             if (i != card.indexInHand) {
-                card.x = i * this.CARDS_IN_HAND_INTERVAL_X + this.CARDS_IN_HAND_ANCHOR_X;
+                card.targetPosX = i * this.CARDS_IN_HAND_INTERVAL_X + this.CARDS_IN_HAND_ANCHOR_X;
                 card.indexInHand = i;
             }
         }
@@ -62,5 +63,23 @@ export default class CardHolder extends Phaser.GameObjects.Image implements IGam
     }
 
     onEnable() {
+        setInterval(()=>{
+            let acceleration = 0.12;
+            let friction = 0.08;
+            let activation = 0.05;
+
+            this._arrPlayerHand.forEach(item => {
+                if (item.x != item.targetPosX)
+                    item.velocityX += (item.targetPosX > item.x ? 1 : -1) * acceleration;
+                if (item.velocityX != 0) {
+                    item.x += item.velocityX;
+                    item.velocityX -= (item.velocityX > 0 ? 1 : -1) * friction;
+                }
+                if (Math.abs(item.velocityX) < activation && Math.abs(item.targetPosX - item.x) < activation) {
+                    item.velocityX = 0;
+                    item.x = item.targetPosX;
+                }
+            });
+        }, 1);
     }
 }

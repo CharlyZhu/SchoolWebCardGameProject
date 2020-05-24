@@ -20,6 +20,7 @@ export class MainScene extends Phaser.Scene {
         this.load.image("background", "assets/sprites/ui/background.png");
         this.load.image("queue-notice", "assets/sprites/ui/queue-notice.png");
         this.load.image("card-holder", "assets/sprites/ui/card-holder.png");
+        this.load.image("icon-holder", "assets/sprites/ui/icon-holder.png");
         this.load.image("text-holder", "assets/sprites/ui/text-holder.png");
         this.load.image("button-normal", "assets/sprites/ui/button-normal1.png");
         this.load.image("button-highlighted", "assets/sprites/ui/button-normal2.png");
@@ -29,6 +30,8 @@ export class MainScene extends Phaser.Scene {
         this.load.image("icon-2", "assets/sprites/ui/icon-2.png");
         this.load.image("icon-3", "assets/sprites/ui/icon-3.png");
         this.load.image("icon-4", "assets/sprites/ui/icon-4.png");
+        this.load.image("icon-5", "assets/sprites/ui/icon-5.png");
+        this.load.image("icon-6", "assets/sprites/ui/icon-6.png");
 
         this.load.image("time-meter", "assets/sprites/ui/time-meter.png");
         this.load.image("time-meter-fill", "assets/sprites/ui/time-meter-fill.png");
@@ -67,8 +70,6 @@ export class MainScene extends Phaser.Scene {
         let queueNotice = new Notice(this, 500, 440, "queue-notice");
         let messageBoxComponent = new MessageBox(this, 80, 350, "text-holder");
         let cardHolderComponent = new CardHolder(this, 20, 580, "card-holder");
-        let characterComponent = new Character(this, 770, 210, "knight-idle");
-        let enemyCharacterComponent = new Character(this, 1120, 180, "knight-idle", 3, true);
         let endTurnButton = new Button(this, 1080, 550, "END TURN",
             "button-normal",
             "button-disabled",
@@ -90,8 +91,8 @@ export class MainScene extends Phaser.Scene {
         gameManager = new GameManager(this);
         gameManager.addGameObject("MessageBox", messageBoxComponent);
         gameManager.addGameObject("CardHolder", cardHolderComponent);
-        gameManager.addGameObject("Character", characterComponent);
-        gameManager.addGameObject("EnemyCharacter", enemyCharacterComponent);
+        gameManager.addGameObject("Character", new Character(this, 850, 190, "knight-idle"));
+        gameManager.addGameObject("EnemyCharacter", new Character(this, 1120, 170, "knight-idle", 3, true));
         gameManager.addGameObject("EndTurnButton", endTurnButton);
         gameManager.addGameObject("QueueNotice", queueNotice);
 
