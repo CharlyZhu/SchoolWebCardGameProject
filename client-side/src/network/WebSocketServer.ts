@@ -8,8 +8,8 @@ export class WebSocketServer {
         if (!window.WebSocket)
             return;
 
-        //this._ws = new WebSocket("ws://54.37.66.227:8001");
-        this._ws = new WebSocket("ws://localhost:8001");
+        this._ws = new WebSocket("ws://54.37.66.227:8001");
+        //this._ws = new WebSocket("ws://localhost:8001");
 
         await new Promise<void>((resolve, reject) => {
             // Listener for when connection is made and the server is open.

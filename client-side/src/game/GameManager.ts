@@ -45,15 +45,15 @@ export default class GameManager {
             return <IGameObject>this._gameObjects.get(componentName);
     }
 
-    public playSound(value: string, mute: boolean=!gameConfig.audio.sound, loop: number=1, volume: number=1): Phaser.Sound.BaseSound {
+    public playSound(value: string, mute: boolean=!gameConfig.audio.sound, loop: boolean=false, volume: number=1): Phaser.Sound.BaseSound {
         let sound = this._scene.sound.add(value, {
             mute: mute,
             volume: volume,
             rate: 1,
             detune: 0,
             seek: 0,
-            loop: false,
-            delay: loop
+            loop: loop,
+            delay: 0
         });
         sound.play();
         return sound;

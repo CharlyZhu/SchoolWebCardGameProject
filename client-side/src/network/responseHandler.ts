@@ -22,13 +22,21 @@ export function handleResponse(response: string) {
             return;
         case "game":
             switch (jsonObj.action) {
-                case "confirm-ready":
-                    //gameManager.getGameObject("Character").animateWeaponUpgrade();
-                    //gameManager.getGameObject("QueueNotice").destroy();
+                case "game-end":
+                    if (jsonObj.value) {
+                        gameManager.messageBox.addMessage("You have won the game.", '#123456', true);
+                        gameManager.playSound("win");
+                    }
+                    else {
+                        gameManager.messageBox.addMessage("You have lost the game.", '#654321', true);
+                        gameManager.playSound("lose");
+                    }
                     break;
                 case "confirm-game":
                     gameManager.queueNotice.destroy();
-                    gameManager.bgm = gameManager.playSound("bgm", !gameConfig.audio.music, -1, .1);
+                    gameManager.bgm = gameManager.playSound("bgm", !gameConfig.audio.music, true, .1);
+                    gameManager.messageBox.addMessage("[CARD SPRITE] On one foggy afternoon, the two warriors has meet on this narrow path.", "#402056", true);
+                    gameManager.messageBox.addMessage("[CARD SPRITE] One thing is certain, there will be only one survivor.", "#402056", true);
                     break;
                 case "message":
                     gameManager.messageBox.addMessage(jsonObj.value, jsonObj.color, jsonObj.bold);

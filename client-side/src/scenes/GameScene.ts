@@ -44,6 +44,9 @@ export class GameScene extends Phaser.Scene {
         this.load.audio("forge", "assets/audio/sound/forge.mp3");
         this.load.audio("heal", "assets/audio/sound/heal.mp3");
         this.load.audio("swing", "assets/audio/sound/swing.mp3");
+        this.load.audio("win", "assets/audio/sound/win.mp3");
+        this.load.audio("lose", "assets/audio/sound/lose.mp3");
+        this.load.audio("eat", "assets/audio/sound/eat.mp3");
 
         // Loading card sprite images into the game.
         this.loadCardSprites().then(()=>{ console.log("Card sprites successfully loaded."); });
@@ -75,7 +78,7 @@ export class GameScene extends Phaser.Scene {
         new Label(this, 1000, 320, "icon-2", "= Mana");
         new Label(this, 1000, 340, "icon-3", "= Armour");
         new Label(this, 1000, 360, "icon-4", "= Weapon Damage");
-        new Label(this, 1000, 380, "icon-5", "Strength");
+        new Label(this, 1000, 380, "icon-5", "= Strength");
 
         gameManager = new GameManager(this);
         gameManager.timer = new TimeMeter(this, 660, 290, "time-meter", "time-meter-fill", 60);
@@ -84,6 +87,7 @@ export class GameScene extends Phaser.Scene {
         gameManager.player = new Character(this, 850, 190, "knight-idle");
         gameManager.player.enemy = new Character(this, 1120, 170, "knight-idle", 3, true);
         gameManager.player.enemy.enemy = gameManager.player;
+        gameManager.player.enemy.isEnemy = true;
         gameManager.queueNotice = new Notice(this, 500, 440, "queue-notice");
         gameManager.endTurnBtn = new Button(this, 1080, 500, "END TURN",
             "button-normal",

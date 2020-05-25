@@ -64,7 +64,7 @@ connInit = (conn, connId)=>{
         conn.isTurn = true;
         conn.turnTime = playerConfig.gamePlay.timePerTurn;
         conn.opponent.isTurn = false;
-        conn.displayMessage("It is your turn to act now!", '#062903', true); // TODO: This could be moved to client side?
+        conn.displayMessage("It is your turn, act now!", '#062903', true); // TODO: This could be moved to client side?
         conn.alterMana(playerConfig.gamePlay.manaPerTurn);
         conn.drawCard();
         conn.sendTurnStatus();
@@ -75,7 +75,7 @@ connInit = (conn, connId)=>{
     conn.drawCard = (amount = 1) => {
         for (let i = 0; i < amount; i++) {
             if (conn.arrCardsInHand.length + 1 > playerConfig.gamePlay.maxHand) {
-                conn.displayMessage("You did not draw more card as you cannot hold more than " + playerConfig.gamePlay.maxHand + " cards.", '#FF9E00');
+                conn.displayMessage("Your hand is full, you cannot hold more than " + playerConfig.gamePlay.maxHand + " cards.", '#FF9E00');
                 return;
             }
             let cardId = conn.getRandomCardFromDeck();
@@ -138,8 +138,10 @@ connInit = (conn, connId)=>{
         if (dmgObj.weapon) {
             let dmg = dmgObj.weapon * conn.weapon - armour;
             armour -= dmgObj.weapon * conn.weapon;
-            if (dmg > 0)
+            if (dmg > 0) {
                 conn.opponent.alterHealth(-dmg);
+                conn.displayMessage("[CARD SPRITE] You swing your weapon at your foe and dealt " + dmg + " damage.", "#402056", true);
+            }
         }
         if (armour < 0)
             armour = 0;
@@ -148,6 +150,7 @@ connInit = (conn, connId)=>{
             let dmg = 0;
             // If strength is -1, deal all mana as damage.
             if (dmgObj.strength === -1) {
+                conn.displayMessage("[CARD SPRITE] Throwing in all you've got? I like that...", "#402056", true);
                 for (let i = 0; i < conn.mana; i++) {
                     conn.opponent.alterHealth(-Math.max(conn.strength - armour, 0));
                     armour -= conn.strength;
@@ -158,8 +161,12 @@ connInit = (conn, connId)=>{
             else {
                 dmg = dmgObj.strength * conn.strength - armour;
                 armour -= dmgObj.strength * conn.strength;
-                if (dmg > 0)
+                if (dmg > 0) {
+                    conn.displayMessage("[CARD SPRITE] The force of your strength dealt " + dmg + " damage.", "#402056", true);
                     conn.opponent.alterHealth(-dmg);
+                }
+                else
+                    conn.displayMessage("[CARD SPRITE] You strike the enemy but their armour blocked all the damage.", "#402056", true);
             }
         }
         if (armour < 0)
@@ -167,16 +174,27 @@ connInit = (conn, connId)=>{
         // Calculate random damage.
         if (dmgObj.random) {
             let dmg = dmgObj.random[0] + Math.floor(Math.random() * dmgObj.random[1]) - armour;
+            if (dmg < 3)
+                conn.displayMessage("[CARD SPRITE] With some luck, you dealt " + dmg + " extra damage.", "#402056", true);
+            else if (dmg < 6)
+                conn.displayMessage("[CARD SPRITE] Lucky shot! You dealt " + dmg + " extra damage.", "#402056", true);
+            if (dmg === 6)
+                conn.displayMessage("[CARD SPRITE] Critical hit! You dealt " + dmg + " extra damage.", "#402056", true);
             conn.opponent.alterHealth(-dmg);
         }
     };
 
     // Discards a certain amount of random cards for player.
     conn.discard = (amount=1)=>{
+        conn.displayMessage("[CARD SPRITE] Discarding card? An interesting choice indeed.", "#402056", true);
         while (conn.getRandomCardFromDeck() >= 0 && amount > 0) {
             let card = conn.getRandomCardFromDeck();
-            if (card !== -1)
+            if (card !== -1) {
+                conn.displayMessage("Card " + cardMgr.getCardName(card) + " was torn apart by an ancient power.", "#565000", true);
                 conn.removeCard(card);
+            }
+            else
+                conn.displayMessage("Your hand was empty, the card sprite seemed extremely angry.", "#565000", true);
             amount--;
         }
     };
@@ -206,10 +224,6 @@ connInit = (conn, connId)=>{
 
     // Set if player had won the game.
     conn.setWin = (value)=>{
-        if (value)
-            conn.displayMessage("You have won the game.", '#123456', true); // TODO: This could be moved to client side?
-        else
-            conn.displayMessage("You have lost the game.", '#654321', true); // TODO: This could be moved to client side?
         conn.sendJson({type: "game", action: "game-end", value: value});
         conn.close();
     };
@@ -267,7 +281,7 @@ connInit = (conn, connId)=>{
         conn.updateInfo("weapon", true);
         conn.updateInfo("strength", true);
         conn.updateInfo("armour", true);
-        conn.displayMessage("Game starting.. You have been assigned to opponent [" + opponentConn.id + "], try not to cheat during the game.");
+        conn.displayMessage("Game starting.. You have been assigned to opponent [" + opponentConn.id + "], cheating is punishable by death!");
         conn.sendJson({type: "game", action: "confirm-game"});
         conn.drawCard(3);
         conn.status = "IN-GAME";
