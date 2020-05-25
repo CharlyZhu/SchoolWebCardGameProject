@@ -164,7 +164,7 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         this._weaponIcon.setText(value.toString());
         if (value > this._weapon) {
             this.addFloatIndication("weapon",  "+" + (value - this._weapon));
-            this._weaponIcon.setScale(this._weaponIcon.scale * 2);
+            this._weaponIcon.setScale(this._weaponIcon.scale * 1.3);
             gameManager.playSound("forge");
             if (!this.isEnemy)
                 gameManager.messageBox.addMessage("[WEAPON SMITH] Pretty price for a pretty weapon.", "#402056", true);
@@ -178,7 +178,7 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         if (value > this._armour) {
             for (let i = 0; i < value - this._armour; i++)
                 this.addFloatIndication("armour",  "+1");
-            this._armourIcon.setScale(this._armourIcon.scale * 2);
+            this._armourIcon.setScale(this._armourIcon.scale *  1.3);
             gameManager.playSound("chain-mail");
             gameManager.messageBox.addMessage("[ARMOUR SMITH] Newly forged, take care of it.", "#402056", true);
         }

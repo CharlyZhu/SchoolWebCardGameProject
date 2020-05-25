@@ -190,7 +190,7 @@ connInit = (conn, connId)=>{
         while (conn.getRandomCardFromDeck() >= 0 && amount > 0) {
             let card = conn.getRandomCardFromDeck();
             if (card !== -1) {
-                conn.displayMessage("Card " + cardMgr.getCardName(card) + " was torn apart by an ancient power.", "#565000", true);
+                conn.displayMessage("Card " + cardMgr.getCardData(card).name + " was torn apart by an ancient power.", "#565000", true);
                 conn.removeCard(card);
             }
             else
