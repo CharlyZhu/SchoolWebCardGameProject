@@ -32,6 +32,8 @@ export class WebSocketServer {
         this._ws.onclose = () => {
             this._ws.close();
             console.log("You have lost connection to the remote server.");
+            // Sends a signal to responseHandler.
+            responseHandler(JSON.stringify({type: "closed"}));
         };
 
         // Sets that websocket closes before page closes.

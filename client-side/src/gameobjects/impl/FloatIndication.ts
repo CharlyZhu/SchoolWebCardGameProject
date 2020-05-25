@@ -20,6 +20,7 @@ export default class FloatIndication extends Phaser.GameObjects.Image implements
             message.alpha -= 0.002;
             this.alpha -= 0.002;
             if (this.alpha <= 0) {
+                clearInterval(this._intervalId);
                 message.destroy();
                 this.destroy();
             }

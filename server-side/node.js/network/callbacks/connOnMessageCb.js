@@ -66,27 +66,20 @@ connOnMessageCb = (conn, msg)=>{
                     let cardCost = cardData.cost;
                     if (cardCost === -1) {
                         if (conn.mana <= 0) {
-                            conn.displayMessage("You cannot use that, you do not have any mana.");
+                            conn.displayMessage("You cannot use that, you do not have any mana.", "#aa2640", true);
                             break;
                         }
                         cardCost = conn.mana;
                     }
                     if (conn.mana < cardCost) {
-                        conn.displayMessage("You do not have enough mana.");
+                        conn.displayMessage("You do not have enough mana.", "#aa2640", true);
                         break;
                     }
                     // Doing this before calculation of damage as strength and weapon damage affects damage.
-                    if (cardData.weapon && cardData.weapon > 0) {
-                        conn.weapon = cardData.weapon;
-                        conn.updateInfo("weapon");
-                        conn.opponent.updateInfo("weapon", true);
-                    }
-                    if (cardData.strength && cardData.strength > 0) {
-                        conn.strength += parseInt(cardData.strength);
-                        conn.updateInfo("strength");
-                        conn.opponent.updateInfo("strength", true);
-                    }
-                    console.log(cardData.armour);
+                    if (cardData.weapon && cardData.weapon > 0)
+                        conn.setWeapon(cardData.weapon);
+                    if (cardData.strength && cardData.strength > 0)
+                        conn.setStrength(cardData.strength);
                     if (cardData.armour && parseInt(cardData.armour) > 0) {
                         conn.armour = parseInt(cardData.armour);
                         conn.updateInfo("armour");
@@ -105,7 +98,7 @@ connOnMessageCb = (conn, msg)=>{
                     if (cardData.draw && cardData.draw > 0)
                         conn.drawCard(cardData.draw);
                     if (cardData.heal && cardData.heal > 0)
-                        conn.heal(cardData.heal);
+                        conn.alterHealth(cardData.heal);
                     // Adds mana.
                     if (cardData.mana && cardData.mana > 0)
                         conn.alterMana(cardData.mana);

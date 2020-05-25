@@ -49,11 +49,11 @@ connInit = (conn, connId)=>{
     // Returns if player can preform game action. Sends feed back to client if they cant.
     conn.validateGameAction = ()=>{
         if (!conn.opponent) {
-            conn.displayMessage("Action denied, you are not in a game yet...", '#800000');
+            conn.displayMessage("Action denied, you are not in a game yet...", '#800000', true);
             return false;
         }
         if (!conn.isTurn) {
-            conn.displayMessage("Action denied, it is not your turn yet...", '#800000');
+            conn.displayMessage("Action denied, it is not your turn yet...", '#800000', true);
             return false;
         }
         return true;
@@ -86,7 +86,6 @@ connInit = (conn, connId)=>{
         }
         conn.updateInfo("cards-left");
         conn.opponent.updateInfo("cards-left", true);
-        console.log(conn.getCardsLeft());
     };
 
     // Tells player if it is their turn.
@@ -96,52 +95,79 @@ connInit = (conn, connId)=>{
 
     // Alters player's mana value.
     conn.alterMana = (value) => {
-        conn.mana += value;
+        conn.mana += parseInt(value);
         conn.updateInfo("mana");
         conn.opponent.updateInfo("mana", true);
     };
 
-    // Damages opponent and plays animation.
-    conn.damage = (value) => {
-        conn.health -= value;
-        // TODO: This could be simplified client side, client can check the change and decide what animation to play.
-        conn.sendJson({type: "game", action: "damage", is_enemy: true, value: value});
-        conn.opponent.sendJson({type: "game", action: "damage", is_enemy: false, value: value});
+    // Alters player's health value.
+    conn.alterHealth = (value) => {
+        conn.health += parseInt(value);
         conn.updateInfo("health");
         conn.opponent.updateInfo("health", true);
     };
 
-    conn.heal = (value) => {
-        conn.health += parseInt(value);
-        // TODO: This could be simplified client side, client can check the change and decide what animation to play.
-        conn.sendJson({type: "game", action: "heal", is_enemy: false, value: value});
-        conn.opponent.sendJson({type: "game", action: "heal", is_enemy: true, value: value});
-        conn.updateInfo("health");
-        conn.opponent.updateInfo("health", true);
+    // Sets player's weapon damage value.
+    conn.setWeapon = (value) => {
+        conn.weapon = value;
+        conn.updateInfo("weapon");
+        conn.opponent.updateInfo("weapon", true);
+    };
+
+    // Sets player's strength value.
+    conn.setStrength = (value)=>{
+        conn.strength += parseInt(value);
+        conn.updateInfo("strength");
+        conn.opponent.updateInfo("strength", true);
+    };
+
+    // Sets player's armour value.
+    conn.setArmour = (value)=>{
+        conn.armour += parseInt(value);
+        conn.updateInfo("armour");
+        conn.opponent.updateInfo("armour", true);
     };
 
     // Calculates the damage from damage object and damages player's opponent.
     conn.dealDamage = (dmgObj) => {
+        // If damage object is undefined, just skip it.
         if (!dmgObj)
             return;
+        let armour = conn.opponent.armour;
+        // Calculate weapon damage.
         if (dmgObj.weapon) {
-            let extraDmg = dmgObj.weapon * conn.weapon;
-            conn.opponent.damage(Math.max(0, extraDmg - conn.opponent.armour));
+            let dmg = dmgObj.weapon * conn.weapon - armour;
+            armour -= dmgObj.weapon * conn.weapon;
+            if (dmg > 0)
+                conn.opponent.alterHealth(-dmg);
         }
+        if (armour < 0)
+            armour = 0;
+        // Calculate strength damage.
         if (dmgObj.strength) {
-            let extraDmg = 0;
+            let dmg = 0;
             // If strength is -1, deal all mana as damage.
             if (dmgObj.strength === -1) {
-                for (let i = 0; i < conn.mana; i++)
-                    conn.opponent.damage(conn.strength);
+                for (let i = 0; i < conn.mana; i++) {
+                    conn.opponent.alterHealth(-Math.max(conn.strength - armour, 0));
+                    armour -= conn.strength;
+                    if (armour < 0)
+                        armour = 0;
+                }
             }
-            else
-                extraDmg = dmgObj.strength * conn.strength;
-            conn.opponent.damage(extraDmg);
+            else {
+                dmg = dmgObj.strength * conn.strength - armour;
+                armour -= dmgObj.strength * conn.strength;
+                if (dmg > 0)
+                    conn.opponent.alterHealth(-dmg);
+            }
         }
+        if (armour < 0)
+            armour = 0;
+        // Calculate random damage.
         if (dmgObj.random) {
-            let extraDmg = dmgObj.random[0] + Math.floor(Math.random() * dmgObj.random[1]);
-            conn.opponent.damage(extraDmg);
+            let dmg = dmgObj.random[0] + Math.floor(Math.random() * dmgObj.random[1]) - armour;
+            conn.opponent.alterHealth(-dmg);
         }
     };
 

@@ -1,11 +1,21 @@
-import {server} from "../index";
-import {gameManager} from "../scenes/MainScene";
-import Character from "../gameobjects/impl/Character";
+import {gameConfig, server} from "../index";
+import {gameManager} from "../scenes/GameScene";
 
+// Back layer of the game, handles internet inputs.
 export function handleResponse(response: string) {
     let jsonObj = JSON.parse(response);
-
+    let countDown = 5;
     switch(jsonObj.type) {
+        case "closed":
+            gameManager.messageBox.addMessage("You are disconnected from the server.", "#832b1f", true);
+            gameManager.stopBgm();
+            setInterval(()=>{
+                if (countDown == 0)
+                    location.reload();
+                gameManager.messageBox.addMessage("Going back to main menu in " + countDown + " seconds.", "#884433", true);
+                countDown--;
+            }, 1000, 1000);
+            return;
         case "heartBeat":
             // Sending the server timestamp back to server to complete ping test server side.
             server.sendToServer({type: "heartBeat", timestamp: jsonObj.timestamp});
@@ -17,106 +27,73 @@ export function handleResponse(response: string) {
                     //gameManager.getGameObject("QueueNotice").destroy();
                     break;
                 case "confirm-game":
-                    gameManager.getGameObject("QueueNotice").destroy();
+                    gameManager.queueNotice.destroy();
+                    gameManager.bgm = gameManager.playSound("bgm", !gameConfig.audio.music, -1, .1);
                     break;
                 case "message":
-                    gameManager.getGameObject("MessageBox").addMessage(jsonObj.value, jsonObj.color, jsonObj.bold);
-                    break;
-                case "damage":
-                    let player: Character = <Character>gameManager.getGameObject("Character");
-                    let enemy: Character = <Character>gameManager.getGameObject("EnemyCharacter");
-                    if (jsonObj.is_enemy)
-                        enemy.playAnimation("knight-attack-anim", ()=>{
-                            enemy.playAnimation("knight-idle-anim");
-                            player.animateDamage();
-                        });
-                    else
-                        player.playAnimation("knight-attack-anim", ()=>{
-                            player.playAnimation("knight-idle-anim");
-                            enemy.animateDamage();
-                        });
+                    gameManager.messageBox.addMessage(jsonObj.value, jsonObj.color, jsonObj.bold);
                     break;
                 case "draw":
-                    gameManager.getGameObject("CardHolder").addCardToHand(jsonObj.value);
+                    gameManager.cardHolder.addCardToHand(jsonObj.value);
                     break;
                 case "deal":
-                    gameManager.getGameObject("CardHolder").removeCardFromHand(jsonObj.value);
+                    gameManager.cardHolder.removeCardFromHand(jsonObj.value);
                     break;
                 case "showOnBoard":
                     if (!jsonObj.is_enemy)
-                        gameManager.getGameObject("Character").displayCard(jsonObj.value);
+                        gameManager.player.displayCard(jsonObj.value);
                     else
-                        gameManager.getGameObject("EnemyCharacter").displayCard(jsonObj.value);
+                        gameManager.player.enemy.displayCard(jsonObj.value);
                     break;
                 case "info":
-                    // TODO: probably better to pass in a json object and let character handle it.
-                    if (!jsonObj.is_enemy) {
-                        let player: Character = <Character>gameManager.getGameObject("Character");
-                        switch (jsonObj.info_type) {
-                            case "health":
-                                player.updateHealth(jsonObj.value);
-                                break;
-                            case "mana":
-                                player.updateMana(jsonObj.value);
-                                break;
-                            case "weapon":
-                                player.updateWeapon(jsonObj.value);
-                                break;
-                            case "armour":
-                                player.updateArmour(jsonObj.value);
-                                break;
-                            case "cards-left":
-                                player.updateCardsLeft(jsonObj.value);
-                                break;
-                            case "strength":
-                                player.updateStrength(jsonObj.value);
-                                break;
-                        }
-                    }
-                    else {
-                        let enemy: Character = <Character>gameManager.getGameObject("EnemyCharacter");
-                        switch (jsonObj.info_type) {
-                            case "health":
-                                enemy.updateHealth(jsonObj.value);
-                                break;
-                            case "mana":
-                                enemy.updateMana(jsonObj.value);
-                                break;
-                            case "weapon":
-                                enemy.updateWeapon(jsonObj.value);
-                                break;
-                            case "armour":
-                                enemy.updateArmour(jsonObj.value);
-                                break;
-                            case "cards-left":
-                                enemy.updateCardsLeft(jsonObj.value);
-                                break;
-                            case "strength":
-                                enemy.updateStrength(jsonObj.value);
-                                break;
-                        }
-                    }
+                    if (!jsonObj.is_enemy)
+                        updateStats(gameManager.player, jsonObj);
+                    else
+                        updateStats(gameManager.player.enemy, jsonObj);
                     break;
                 case "turn-status":
                     if (jsonObj.value){
-                        gameManager.getGameObject("CardHolder").enableAllCards();
-                        gameManager.getGameObject("EndTurnButton").setDisabled(false);
-                        gameManager.getGameObject("EndTurnButton").setText("END TURN");
-                        gameManager.getGameObject("Character").playAnimation("knight-idle-anim");
-                        gameManager.getGameObject("EnemyCharacter").stopAnimation();
-                        gameManager.getGameObject("TimeMeter").resetCountdown();
+                        gameManager.cardHolder.enableAllCards();
+                        gameManager.endTurnBtn.setDisabled(false);
+                        gameManager.endTurnBtn.setText("END TURN");
+                        gameManager.player.playAnimation("knight-idle-anim");
+                        gameManager.player.enemy.stopAnimation();
+                        gameManager.timer.resetCountdown();
                     }
                     else{
-                        gameManager.getGameObject("MessageBox").addMessage("Your enemy's turn has started.");
-                        gameManager.getGameObject("CardHolder").disableAllCards();
-                        gameManager.getGameObject("EndTurnButton").setDisabled(true);
-                        gameManager.getGameObject("EndTurnButton").setText("TURN ENDED");
-                        gameManager.getGameObject("EnemyCharacter").playAnimation("knight-idle-anim");
-                        gameManager.getGameObject("Character").stopAnimation();
-                        gameManager.getGameObject("TimeMeter").pauseCountdown();
+                        gameManager.messageBox.addMessage("Your enemy's turn has started.");
+                        gameManager.cardHolder.disableAllCards();
+                        gameManager.endTurnBtn.setDisabled(true);
+                        gameManager.endTurnBtn.setText("TURN ENDED");
+                        gameManager.player.enemy.playAnimation("knight-idle-anim");
+                        gameManager.player.stopAnimation();
+                        gameManager.timer.pauseCountdown();
                     }
                     break;
             }
     }
     console.log(response);
+}
+
+function updateStats(player, jsonObj) {
+    switch (jsonObj.info_type) {
+        case "health":
+            player.updateHealth(jsonObj.value);
+            break;
+        case "mana":
+            player.updateMana(jsonObj.value);
+            break;
+        case "weapon":
+            player.updateWeapon(jsonObj.value);
+            break;
+        case "armour":
+            player.updateArmour(jsonObj.value);
+            break;
+        case "cards-left":
+            player.updateCardsLeft(jsonObj.value);
+            break;
+        case "strength":
+            player.updateStrength(jsonObj.value);
+            break;
+    }
 }

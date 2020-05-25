@@ -1,4 +1,4 @@
-import {MainScene} from "../../scenes/MainScene";
+import {GameScene} from "../../scenes/GameScene";
 import Message from "../../game/Message";
 import {IGameObject} from "../IGameObject";
 
@@ -6,10 +6,12 @@ export default class MessageBox extends Phaser.GameObjects.Image implements IGam
     public static readonly MAX_MESSAGE_LENGTH = 8;
     private _arrMessages: Message[] = [];
 
-    public constructor(scene: MainScene, x: number, y: number, backgroundTexture: string) {
+    public constructor(scene: Phaser.Scene, x: number, y: number, backgroundTexture: string) {
         super(scene, x, y, backgroundTexture);
         this.setOrigin(0, 1);
         this.scale = 4;
+
+        scene.add.existing(this);
     }
 
     public addMessage(message: string, color: string = 'black', bold: boolean = false): void {

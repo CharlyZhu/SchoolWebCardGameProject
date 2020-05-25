@@ -1,5 +1,5 @@
 import {IGameObject} from "../IGameObject";
-import {gameManager, MainScene} from "../../scenes/MainScene";
+import {gameManager, GameScene} from "../../scenes/GameScene";
 import Card from "../../card/Card";
 import {cardMgr} from "../../card/CardManager";
 import FloatIndication from "./FloatIndication";
@@ -25,6 +25,8 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
     private _strength: number = 1;
     private _armour: number = 1;
 
+    public enemy: Character;
+
     public constructor(scene: Phaser.Scene, x: number, y: number, characterSprite: string, scale: number = 5, reversed: boolean = false) {
         super(scene, x, y, characterSprite);
         this.setOrigin(.5, .5);
@@ -46,6 +48,9 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         this._cardsIcon = new Icon(scene, x + (reversed ?  scale * 16 : -scale * 16), y - scale * 10, "icon-6", "30", scale / 2);
 
         this._arrPendingFloatIndicator = [];
+
+        scene.add.existing(this);
+        this.onEnable();
     }
 
     public playAnimation(characterAnimation: string, onCompleteCb=()=>{}) {
@@ -94,13 +99,24 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
     }
 
     public updateHealth(value: number): void {
+        // If health and new health stays the same, do nothing.
+        if (this._health == value)
+            return;
         let difference = Math.abs(this._health - value);
-        if (difference != 0)
-            this.addFloatIndication("health", (this._health > value ? "-" : "+") + difference);
         if (this._health > value) {
-            // animate attacked
+            // Animate attacked
+            gameManager.playSound("swing");
+            this.enemy.playAnimation("knight-attack-anim", ()=>{
+                this.enemy.playAnimation("knight-idle-anim");
+                this.animateDamage();
+                this.addFloatIndication("health", "-" + difference);
+                gameManager.playSound("damage");
+            });
         }
         else {
+            for (let i = 0; i < difference; i++)
+                this.addFloatIndication("health",  "+1");
+            gameManager.playSound("heal");
             this.animateTint(0xcaffcf);
         }
         this._healthIcon.setText(value.toString());
@@ -108,9 +124,20 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
     }
 
     public updateMana(value: number): void {
+        // If mana mana stays the same, do nothing.
+        if (this._mana == value)
+            return;
         let difference = Math.abs(this._mana - value);
-        if (difference != 0)
-            this.addFloatIndication("mana", (this._mana > value ? "-" : "+") + difference);
+        if (this._mana > value) {
+            this.addFloatIndication("mana", "-" + difference);
+            gameManager.playSound("coin");
+        }
+        else {
+            for (let i = 0; i < difference; i++) {
+                this.addFloatIndication("mana",  "+1");
+                gameManager.playSound("coin");
+            }
+        }
         this._manaIcon.setText(value.toString());
         this._mana = value;
     }
@@ -121,17 +148,36 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
 
     public updateStrength(value: number): void {
         this._strengthIcon.setText(value.toString());
+        if (value > this._strength) {
+            for (let i = 0; i < value - this._strength; i++)
+                this.addFloatIndication("strength", "+1");
+            this._strengthIcon.setScale(this._strengthIcon.scale * 1.1);
+        }
         this.animateTint(0xcacfcf);
+        this._strength = value;
     }
 
     public updateWeapon(value: number): void {
         this._weaponIcon.setText(value.toString());
+        if (value > this._weapon) {
+            this.addFloatIndication("weapon",  "+" + (value - this._weapon));
+            this._weaponIcon.setScale(this._weaponIcon.scale * 1.1);
+            gameManager.playSound("forge");
+        }
         this.animateTint(0xff3333);
+        this._weapon = value;
     }
 
     public updateArmour(value: number): void {
         this._armourIcon.setText(value.toString());
+        if (value > this._armourIcon) {
+            for (let i = 0; i < value - this._armour; i++)
+                this.addFloatIndication("armour",  "+1");
+            this._armourIcon.setScale(this._armourIcon.scale * 1.1);
+            gameManager.playSound("chain-mail");
+        }
         this.animateTint(0xaaaaaa);
+        this._armour = value;
     }
 
     public addFloatIndication(type: string, value: string) {

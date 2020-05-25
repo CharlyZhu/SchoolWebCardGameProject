@@ -1,7 +1,6 @@
-import {IGameObject} from "../IGameObject";
 import Message from "../../game/Message";
 
-export default class Button extends Phaser.GameObjects.Image implements IGameObject {
+export default class Button extends Phaser.GameObjects.Image {
     private readonly _txtText: Message;
     private _disabled: boolean;
     private _arrTexture: string[] = new Array();
@@ -26,9 +25,8 @@ export default class Button extends Phaser.GameObjects.Image implements IGameObj
             if (!this._disabled)
                 this.setTexture(buttonTexture);
         });
-    }
 
-    public onEnable() {
+        scene.add.existing(this);
         this.scene.add.existing(this._txtText);
     }
 
@@ -42,5 +40,10 @@ export default class Button extends Phaser.GameObjects.Image implements IGameObj
 
     public setText(text: string) {
         this._txtText.text = text;
+    }
+
+    public destroy(value: boolean) {
+        this._txtText.destroy(true);
+        super.destroy(value);
     }
 }

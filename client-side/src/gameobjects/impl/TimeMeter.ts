@@ -16,10 +16,12 @@ export default class TimeMeter extends Phaser.GameObjects.Image implements IGame
         this._fill = new Phaser.GameObjects.Image(scene, x, y - 19, fillTexture);
         this._fill.scale = this.scale;
         this._fill.setOrigin(0, 1);
+
+        scene.add.existing(this);
+        this.scene.add.existing(this._fill);
     }
 
     public onEnable() {
-        this.scene.add.existing(this._fill);
     }
 
     private startCountdown() {
