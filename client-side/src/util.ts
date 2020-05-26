@@ -1,6 +1,4 @@
-import $ from "jquery";
-
-// Creates a unique ID for the web page (page session)
+i// Creates a unique ID for the web page (page session)
 export function generateUUID(): string {
     let d: number = new Date().getTime();
     let uuid: string = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {

@@ -1,6 +1,7 @@
 import Button from "../game/gameobjects/Button";
 import {gameConfig} from "../index";
 import Message from "../game/gameobjects/Message";
+import {setCookie} from "../util";
 
 export class MenuScene extends Phaser.Scene {
     constructor() {
@@ -36,6 +37,7 @@ export class MenuScene extends Phaser.Scene {
                 "button-normal3",
                 ()=>{
                     gameConfig.audio.sound = !gameConfig.audio.sound;
+                    setCookie("sound", gameConfig.audio.sound, 100000);
                     soundEffectBtn.setText((gameConfig.audio.sound ? "On" : "Off"));
                 }
             );
@@ -46,6 +48,7 @@ export class MenuScene extends Phaser.Scene {
                 "button-normal3",
                 ()=>{
                     gameConfig.audio.music = !gameConfig.audio.music;
+                    setCookie("music", gameConfig.audio.music, 100000);
                     musicBtn.setText((gameConfig.audio.music ? "On" : "Off"));
                 }
             );

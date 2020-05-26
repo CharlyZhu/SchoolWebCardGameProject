@@ -3,6 +3,7 @@ import { WebSocketServer } from "./network/WebSocketServer";
 import { MenuScene } from "./scenes/MenuScene";
 import { LoaderScene } from "./scenes/LoaderScene";
 import { GameScene } from "./scenes/GameScene";
+import {getCookie} from "./util";
 
 // Web server instance.
 export const server = new WebSocketServer();
@@ -23,6 +24,11 @@ export const gameConfig = {
         music: true
     }
 };
+
+let soundSetting = getCookie("sound");
+gameConfig.audio.sound = soundSetting === null || soundSetting == true;
+let musicSetting = getCookie("music");
+gameConfig.audio.music = musicSetting === null || musicSetting == true;
 
 // Creating the game instance.
 const game = new Phaser.Game(gameConfig);
