@@ -68,11 +68,15 @@ connOnMessageCb = (conn, msg)=>{
                     // Implements hack.
                     if (cardUid === 12) {
                         conn.opponent.displayMessage("[CARD SPRITE] Impending doom approaches.", "#402056", true);
-                        conn.opponent.displayMessage("The card sprite has killed you instantly.", "#aa0002", true);
-                        conn.opponent.health = -999;
-
+                        if (conn.opponent.health > 1) {
+                            conn.opponent.displayMessage("The card sprite has made you very weak...", "#aa0002", true);
+                            for (let i = 1; i < conn.opponent.health; i++)
+                                conn.opponent.alterHealth(-i);
+                        }
                         conn.showCardOnBoard(cardUid);
                         conn.opponent.showCardOnBoard(cardUid, true);
+                        // Remove card before discard.
+                        conn.removeCard(obj.value);
                         break;
                     }
 

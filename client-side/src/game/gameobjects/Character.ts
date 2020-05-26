@@ -50,6 +50,8 @@ export default class Character extends Phaser.GameObjects.Sprite {
         this._cardsIcon = new Icon(scene, x + (reversed ?  scale * 16 : -scale * 16), y - scale * 10, "icon-6", "30", scale / 2);
 
         this._arrPendingFloatIndicator = [];
+        this._arrExistingFloatIndicator = [];
+        this._updateCounter = 0;
 
         scene.add.existing(this);
     }
@@ -211,14 +213,15 @@ export default class Character extends Phaser.GameObjects.Sprite {
     }
 
     onUpdate() {
+        this._updateCounter++;
+        this._arrExistingFloatIndicator.forEach(item=>item.onUpdate());
+        if (this._updateCounter === 90001)
+            this._updateCounter = 0;
         if (this._arrPendingFloatIndicator.length === 0)
             return;
         if (this._updateCounter % 30 === 0) {
             let indicator = this._arrPendingFloatIndicator.shift();
             this._arrExistingFloatIndicator.push(new FloatIndication(this.scene, this.x + Math.random() * 40 - 20, this.y + Math.random() * 40 - 80, indicator.texture, indicator.value));
-        }
-        if (this._updateCounter % 2 === 0) {
-            this._arrExistingFloatIndicator.forEach(item=>item.onUpdate());
         }
     }
 }
