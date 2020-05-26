@@ -1,6 +1,6 @@
 import {gameManager, GameScene} from "../../scenes/GameScene";
-import Card from "../../card/Card";
-import {cardMgr} from "../../card/CardManager";
+import Card from "./Card";
+import {cardMgr} from "../CardManager";
 
 export default class CardHolder extends Phaser.GameObjects.Image {
     private _arrPlayerHand: Card[] = [];
@@ -21,7 +21,6 @@ export default class CardHolder extends Phaser.GameObjects.Image {
         let card = new Card(this.scene, 1000, this.CARDS_IN_HAND_ANCHOR_Y, cardMgr.getCardName(index));
         card.targetPosX = this._arrPlayerHand.length * this.CARDS_IN_HAND_INTERVAL_X + this.CARDS_IN_HAND_ANCHOR_X;
         card.indexInHand = this._arrPlayerHand.length;
-        this.scene.add.existing(card);
         gameManager.playSound("card-draw");
         this._arrPlayerHand.push(card);
     }

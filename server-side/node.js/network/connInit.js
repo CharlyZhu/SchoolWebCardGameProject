@@ -187,14 +187,15 @@ connInit = (conn, connId)=>{
     // Discards a certain amount of random cards for player.
     conn.discard = (amount=1)=>{
         conn.displayMessage("[CARD SPRITE] Discarding card? An interesting choice indeed.", "#402056", true);
-        while (conn.getRandomCardFromDeck() >= 0 && amount > 0) {
-            let card = conn.getRandomCardFromDeck();
-            if (card !== -1) {
-                conn.displayMessage("Card " + cardMgr.getCardData(card).name + " was torn apart by an ancient power.", "#565000", true);
-                conn.removeCard(card);
-            }
-            else
-                conn.displayMessage("Your hand was empty, the card sprite seemed extremely angry.", "#565000", true);
+        if (conn.arrCardsInHand.length === 0) {
+            conn.displayMessage("Your hand was empty, the card sprite seemed extremely angry.", "#565000", true);
+            return;
+        }
+        while (conn.arrCardsInHand.length > 0 && amount > 0) {
+            let cardHandIndex = Math.floor(Math.random() * conn.arrCardsInHand.length);
+            conn.displayMessage("Card " + cardMgr.getCardData(conn.arrCardsInHand[cardHandIndex]).name +
+                " was torn apart by an ancient power.", "#565000", true);
+            conn.removeCard(cardHandIndex);
             amount--;
         }
     };

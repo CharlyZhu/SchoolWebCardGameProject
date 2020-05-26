@@ -1,4 +1,4 @@
-import Message from "../../game/Message";
+import Message from "./Message";
 
 export default class Button extends Phaser.GameObjects.Image {
     private readonly _txtText: Message;

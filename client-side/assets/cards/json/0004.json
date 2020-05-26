@@ -1,7 +1,0 @@
-{
-  "name": "Breathe",
-  "uid": "0004",
-  "manaCost": 4,
-  "effects": { "draw": 2 },
-  "imageURL": "https://www.empiraft.com/rowan/img/about_img.jpg"
-}

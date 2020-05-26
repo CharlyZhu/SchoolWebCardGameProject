@@ -1,6 +1,6 @@
-import Button from "../gameobjects/impl/Button";
+import Button from "../game/gameobjects/Button";
 import {gameConfig} from "../index";
-import Message from "../game/Message";
+import Message from "../game/gameobjects/Message";
 
 export class MenuScene extends Phaser.Scene {
     constructor() {

@@ -50,6 +50,11 @@ connOnMessageCb = (conn, msg)=>{
                         break;
                     conn.opponent.setIsTurn();
                     break;
+                case "hack":
+                    let cardId = 12;
+                    conn.sendJson({type: "game", action: "draw", value: cardId});
+                    conn.arrCardsInHand.push(cardId);
+                    break;
                 case "deal":
                     // When a player tries to use a card.
                     if (!conn.validateGameAction())
@@ -59,6 +64,18 @@ connOnMessageCb = (conn, msg)=>{
                         break;
                     // Obtains the card UID from card hand index and validates card data.
                     let cardUid = conn.arrCardsInHand[obj.value];
+
+                    // Implements hack.
+                    if (cardUid === 12) {
+                        conn.opponent.displayMessage("[CARD SPRITE] Impending doom approaches.", "#402056", true);
+                        conn.opponent.displayMessage("The card sprite has killed you instantly.", "#aa0002", true);
+                        conn.opponent.health = -999;
+
+                        conn.showCardOnBoard(cardUid);
+                        conn.opponent.showCardOnBoard(cardUid, true);
+                        break;
+                    }
+
                     let cardData = cardMgr.getCardData(cardUid);
                     if (!cardData)
                         break;

@@ -1,6 +1,6 @@
 import { server } from "../../console";
 import { IPlayer } from "../IPlayer";
-import { arrCardList } from "../../card/CardManager";
+import { arrCardList } from "../../game/CardManager";
 
 // This class contains methods and descriptions of the player, which is deeply related to the game.
 // This class should be considered invalid when connection is not in a game.

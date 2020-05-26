@@ -1,13 +1,14 @@
-import {IGameObject} from "../IGameObject";
-import {gameManager, GameScene} from "../../scenes/GameScene";
-import Card from "../../card/Card";
-import {cardMgr} from "../../card/CardManager";
+import {gameManager} from "../../scenes/GameScene";
+import Card from "./Card";
+import {cardMgr} from "../CardManager";
 import FloatIndication from "./FloatIndication";
 import Icon from "./Icon";
 
-export default class Character extends Phaser.GameObjects.Sprite implements IGameObject {
+export default class Character extends Phaser.GameObjects.Sprite {
     private _arrPendingFloatIndicator: {}[];
+    private _arrExistingFloatIndicator: FloatIndication[];
 
+    private _updateCounter: number;
     private readonly _healthIcon: Icon;
     private readonly _weaponIcon: Icon;
     private readonly _strengthIcon: Icon;
@@ -51,7 +52,6 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         this._arrPendingFloatIndicator = [];
 
         scene.add.existing(this);
-        this.onEnable();
     }
 
     public playAnimation(characterAnimation: string, onCompleteCb=()=>{}) {
@@ -72,6 +72,7 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         }, 50);
     }
 
+    // Animates player tint to other colour.
     public animateTint(colour: number) {
         let times = 0;
         let id = setInterval(()=>{
@@ -156,7 +157,7 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
             if (!this.isEnemy)
                 gameManager.messageBox.addMessage("[CARD SPRITE] You feel your muscles bulge.", "#402056", true);
         }
-        this.animateTint(0xcacfcf);
+        this.animateTint(0xc0caca);
         this._strength = value;
     }
 
@@ -180,9 +181,10 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
                 this.addFloatIndication("armour",  "+1");
             this._armourIcon.setScale(this._armourIcon.scale *  1.3);
             gameManager.playSound("chain-mail");
-            gameManager.messageBox.addMessage("[ARMOUR SMITH] Newly forged, take care of it.", "#402056", true);
+            if (!this.isEnemy)
+                gameManager.messageBox.addMessage("[ARMOUR SMITH] Newly forged, take care of it.", "#402056", true);
         }
-        this.animateTint(0xaaaaaa);
+        this.animateTint(0x777777);
         this._armour = value;
     }
 
@@ -208,18 +210,15 @@ export default class Character extends Phaser.GameObjects.Sprite implements IGam
         this._arrPendingFloatIndicator.push({texture: texture, value: value});
     }
 
-    onEnable() {
-        gameManager.addGameObjectAnonymously(this._healthIcon);
-        gameManager.addGameObjectAnonymously(this._manaIcon);
-        gameManager.addGameObjectAnonymously(this._weaponIcon);
-        gameManager.addGameObjectAnonymously(this._armourIcon);
-        gameManager.addGameObjectAnonymously(this._strengthIcon);
-        gameManager.addGameObjectAnonymously(this._cardsIcon);
-        setInterval(()=>{
-            if (this._arrPendingFloatIndicator.length > 0) {
-                let indicator = this._arrPendingFloatIndicator.shift();
-                gameManager.addGameObjectAnonymously(new FloatIndication(this.scene, this.x + Math.random() * 40 - 20, this.y + Math.random() * 40 - 80, indicator.texture, indicator.value));
-            }
-        }, 500);
+    onUpdate() {
+        if (this._arrPendingFloatIndicator.length === 0)
+            return;
+        if (this._updateCounter % 30 === 0) {
+            let indicator = this._arrPendingFloatIndicator.shift();
+            this._arrExistingFloatIndicator.push(new FloatIndication(this.scene, this.x + Math.random() * 40 - 20, this.y + Math.random() * 40 - 80, indicator.texture, indicator.value));
+        }
+        if (this._updateCounter % 2 === 0) {
+            this._arrExistingFloatIndicator.forEach(item=>item.onUpdate());
+        }
     }
 }

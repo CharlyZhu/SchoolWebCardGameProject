@@ -1,7 +1,7 @@
-import {cardMgr} from "../card/CardManager";
+import {cardMgr} from "../game/CardManager";
 import {handleResponse} from "../network/responseHandler";
 import {server} from "../index";
-import Message from "../game/Message";
+import Message from "../game/gameobjects/Message";
 
 export class LoaderScene extends Phaser.Scene {
     constructor() {

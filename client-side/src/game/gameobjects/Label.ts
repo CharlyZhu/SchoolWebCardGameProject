@@ -1,5 +1,5 @@
 import {GameScene} from "../../scenes/GameScene";
-import Message from "../../game/Message";
+import Message from "./Message";
 
 export default class Label extends Phaser.GameObjects.Sprite {
     private _message: Message;

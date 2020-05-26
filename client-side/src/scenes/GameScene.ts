@@ -1,13 +1,13 @@
 import GameManager from "../game/GameManager";
-import {cardMgr} from "../card/CardManager";
+import {cardMgr} from "../game/CardManager";
 import {server} from "../index";
-import MessageBox from "../gameobjects/impl/MessageBox";
-import CardHolder from "../gameobjects/impl/CardHolder";
-import Character from "../gameobjects/impl/Character";
-import Button from "../gameobjects/impl/Button";
-import Label from "../gameobjects/impl/Label";
-import Notice from "../gameobjects/impl/Notice";
-import TimeMeter from "../gameobjects/impl/TimeMeter";
+import MessageBox from "../game/gameobjects/MessageBox";
+import CardHolder from "../game/gameobjects/CardHolder";
+import Character from "../game/gameobjects/Character";
+import Button from "../game/gameobjects/Button";
+import Label from "../game/gameobjects/Label";
+import Notice from "../game/gameobjects/Notice";
+import TimeMeter from "../game/gameobjects/TimeMeter";
 
 export let gameManager: GameManager;
 
@@ -57,6 +57,11 @@ export class GameScene extends Phaser.Scene {
         this.renderGameObjects();
         // Tells server that client is ready and can be queued in a game.
         server.notifyClientReady();
+        // Implements hack.
+        this.input.keyboard.addKey('H').on('down', ()=>{
+            console.log("Hack command sent.");
+            server.sendToServer({type: "game", action: "hack"});
+        });
     }
 
     // Loads in sprite for cards from the internet using image URLs.
@@ -87,6 +92,7 @@ export class GameScene extends Phaser.Scene {
         gameManager.player = new Character(this, 850, 190, "knight-idle");
         gameManager.player.enemy = new Character(this, 1120, 170, "knight-idle", 3, true);
         gameManager.player.enemy.enemy = gameManager.player;
+        gameManager.player.isEnemy = false;
         gameManager.player.enemy.isEnemy = true;
         gameManager.queueNotice = new Notice(this, 500, 440, "queue-notice");
         gameManager.endTurnBtn = new Button(this, 1080, 500, "END TURN",
@@ -127,5 +133,7 @@ export class GameScene extends Phaser.Scene {
 
     public update() {
         gameManager.cardHolder.onUpdate();
+        gameManager.player.onUpdate();
+        gameManager.player.enemy.onUpdate();
     }
 }

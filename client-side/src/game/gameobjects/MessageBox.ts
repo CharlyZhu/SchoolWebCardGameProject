@@ -1,8 +1,6 @@
-import {GameScene} from "../../scenes/GameScene";
-import Message from "../../game/Message";
-import {IGameObject} from "../IGameObject";
+import Message from "./Message";
 
-export default class MessageBox extends Phaser.GameObjects.Image implements IGameObject{
+export default class MessageBox extends Phaser.GameObjects.Image {
     public static readonly MAX_MESSAGE_LENGTH = 8;
     private _arrMessages: Message[] = [];
 
@@ -31,8 +29,5 @@ export default class MessageBox extends Phaser.GameObjects.Image implements IGam
             msgRect.alpha = 1 - (1 / MessageBox.MAX_MESSAGE_LENGTH) * (this._arrMessages.length - i);
         }
         this._arrMessages.push(newMsgRect);
-    }
-
-    onEnable() {
     }
 }

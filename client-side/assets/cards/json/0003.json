@@ -1,7 +1,0 @@
-{
-  "name": "Leather Jerkin",
-  "uid": "0003",
-  "manaCost": 5,
-  "effects": { "armour": 2 },
-  "imageURL": "https://www.empiraft.com/rowan/img/about_img.jpg"
-}

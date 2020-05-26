@@ -1,14 +1,9 @@
-import {server} from "../index";
+import {server} from "../../index";
 
 export default class Card extends Phaser.GameObjects.Image {
     public indexInHand: number;
 
-    public name: string;
-    public uid: number;
-    public manaCost: number;
-    public effects: {};
-    public imageURL: string;
-
+    // These values are for card movement animation.
     public velocityX: number;
     public targetPosX: number;
 
@@ -29,6 +24,7 @@ export default class Card extends Phaser.GameObjects.Image {
             if (!this._disabled)
                 this.setTint(0xffffff);
         });
+        this.scene.add.existing(this);
 
         this.velocityX = this.targetPosX = 0;
     }
@@ -39,13 +35,5 @@ export default class Card extends Phaser.GameObjects.Image {
             this.setTint(0xaaaaaa);
         else
             this.setTint(0xffffff);
-    }
-
-    public toString(): string {
-        return "Name: " + this.name +
-            "\nUID: " + this.uid.toString() +
-            "\nMana Cost: " + this.manaCost.toString() +
-            "\nEffects: " + JSON.stringify(this.effects) +
-            "\nImage Url: " + this.imageURL;
     }
 }

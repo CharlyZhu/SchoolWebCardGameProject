@@ -1,7 +1,0 @@
-{
-  "name": "Level Up",
-  "uid": "0006",
-  "manaCost": 5,
-  "effects": { "statChooseIncr": 1 },
-  "imageURL": "https://www.empiraft.com/rowan/img/about_img.jpg"
-}

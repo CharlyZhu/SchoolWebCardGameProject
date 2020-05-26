@@ -1,7 +1,6 @@
-import {IGameObject} from "../IGameObject";
-import Message from "../../game/Message";
+import Message from "./Message";
 
-export default class Icon extends Phaser.GameObjects.Image implements IGameObject {
+export default class Icon extends Phaser.GameObjects.Image {
     private readonly _text: Message;
     public constructor(scene: Phaser.Scene, x: number, y: number, texture: string, text: string, scale: number = 5) {
         super(scene, x, y, texture);
@@ -12,13 +11,12 @@ export default class Icon extends Phaser.GameObjects.Image implements IGameObjec
         this._text.setOrigin(.5, .5);
         this._text.setDepth(1);
         this._text.alpha = .7;
+
+        scene.add.existing(this);
+        scene.add.existing(this._text);
     }
 
     public setText(value: string) {
         this._text.text = value;
-    }
-
-    public onEnable() {
-        this.scene.add.existing(this._text);
     }
 }

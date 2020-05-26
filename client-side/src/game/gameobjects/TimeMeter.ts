@@ -1,6 +1,4 @@
-import {IGameObject} from "../IGameObject";
-
-export default class TimeMeter extends Phaser.GameObjects.Image implements IGameObject {
+export default class TimeMeter extends Phaser.GameObjects.Image {
     private readonly _fill: Phaser.GameObjects.Image;
     private readonly value: number;
     private intervalID: NodeJS.Timeout;
@@ -19,9 +17,6 @@ export default class TimeMeter extends Phaser.GameObjects.Image implements IGame
 
         scene.add.existing(this);
         this.scene.add.existing(this._fill);
-    }
-
-    public onEnable() {
     }
 
     private startCountdown() {
