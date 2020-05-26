@@ -62,6 +62,8 @@ export class GameScene extends Phaser.Scene {
             console.log("Hack command sent.");
             server.sendToServer({type: "game", action: "hack"});
         });
+        // Start updating animations.
+        this.startUpdate();
     }
 
     // Loads in sprite for cards from the internet using image URLs.
@@ -131,9 +133,12 @@ export class GameScene extends Phaser.Scene {
         });
     }
 
-    public update() {
-        gameManager.cardHolder.onUpdate();
-        gameManager.player.onUpdate();
-        gameManager.player.enemy.onUpdate();
+    // Not using default update method as update lags on mobile devices.
+    public startUpdate() {
+        setInterval(()=>{
+            gameManager.cardHolder.onUpdate();
+            gameManager.player.onUpdate();
+            gameManager.player.enemy.onUpdate();
+        }, 15);
     }
 }

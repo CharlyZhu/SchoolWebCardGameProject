@@ -7,7 +7,7 @@ export default class Icon extends Phaser.GameObjects.Image {
         this.scale = scale;
         this.setDepth(1);
 
-        this._text = new Message(this.scene, x, y, "30", scale * 8, true, "Arial", 'white', 200, false);
+        this._text = new Message(this.scene, x, y, text, scale * 8, true, "Arial", 'white', 200, false);
         this._text.setOrigin(.5, .5);
         this._text.setDepth(1);
         this._text.alpha = .7;
